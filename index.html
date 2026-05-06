@@ -27,6 +27,7 @@
     --text2: #94a3b8;
     --text3: #64748b;
     --code-bg: #0d1117;
+    --code-text: #e6edf3;
     --keyword: #ff79c6;
     --string: #f1fa8c;
     --comment: #6272a4;
@@ -52,8 +53,15 @@
     --red: #b91c1c;
     --text: #0f172a;
     --text2: #475569;
-    --text3: #94a3b8;
-    --code-bg: #1e2430;
+    --text3: #64748b;
+    --code-bg: #ffffff;
+    --code-text: #0f172a;
+    --keyword: #be185d;
+    --string: #854d0e;
+    --comment: #64748b;
+    --func: #047857;
+    --number: #6d28d9;
+    --builtin: #0369a1;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -181,6 +189,7 @@
     position: relative;
     z-index: 1;
     min-height: calc(100vh - 64px);
+    width: 100%;
   }
 
   /* ─── SIDEBAR ─── */
@@ -250,9 +259,10 @@
   /* ─── MAIN ─── */
   main {
     flex: 1;
+    width: 100%;
     padding: 32px 40px;
     min-width: 0;
-    max-width: 900px;
+    max-width: none;
   }
 
   /* ─── HERO BAR ─── */
@@ -394,6 +404,7 @@
 
   /* ─── SECTION ─── */
   .section {
+    scroll-margin-top: 84px;
     margin-bottom: 32px;
     border-radius: 14px;
     overflow: hidden;
@@ -700,6 +711,7 @@
 
   pre.code-block {
     background: var(--code-bg);
+    color: var(--code-text);
     padding: 14px 16px;
     overflow-x: auto;
     font-family: 'JetBrains Mono', monospace;
@@ -2586,7 +2598,15 @@ function toggleTheme() {
 // ═══════════════════════════════════════════════════════
 function scrollToSection(id) {
   const el = document.getElementById('sec-' + id);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (!el) return;
+
+  el.querySelector('.section-header')?.classList.add('open');
+  el.querySelector('.section-body')?.classList.add('open');
+
+  const headerOffset = document.querySelector('header')?.offsetHeight || 64;
+  const top = el.getBoundingClientRect().top + window.pageYOffset - headerOffset - 12;
+  window.scrollTo({ top, behavior: 'smooth' });
+
   document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
   document.getElementById('sl-' + id)?.classList.add('active');
 }
@@ -2600,7 +2620,7 @@ const observer = new IntersectionObserver((entries) => {
       document.getElementById('sl-' + id)?.classList.add('active');
     }
   });
-}, { threshold: 0.1, rootMargin: '-80px 0px -60% 0px' });
+}, { threshold: 0.01, rootMargin: '-96px 0px -72% 0px' });
 
 // Modal backdrop close
 document.querySelectorAll('[id$="Modal"].modal-overlay').forEach(modal => {
