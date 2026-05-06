@@ -27,3 +27,11 @@ For GitHub Pages:
 3. Go to Pages.
 4. Deploy from the `main` branch root.
 
+
+## Creator
+
+Made by Jeet Prajapati.
+
+- Portfolio: https://portfolio-theta-lake-97.vercel.app
+- GitHub: https://github.com/Jeet3107
+- Email: jeetprajapati677@gmail.com

@@ -784,6 +784,52 @@
     margin-bottom: 16px;
   }
 
+  /* ─── CREATOR FOOTER ─── */
+  .creator-footer {
+    margin: 40px 0 8px;
+    padding: 18px 0 4px;
+    border-top: 1px solid var(--border);
+    color: var(--text3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 0.82rem;
+  }
+  .creator-footer strong { color: var(--text); font-weight: 600; }
+  .footer-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .footer-link {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    border-radius: 6px;
+    padding: 6px 10px;
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.76rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .footer-link:hover { border-color: var(--accent); color: var(--accent); }
+  .info-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    color: var(--text2);
+    font-size: 0.88rem;
+    line-height: 1.65;
+  }
+  .info-panel a { color: var(--accent); text-decoration: none; }
+  .info-panel a:hover { text-decoration: underline; }
+
+
   /* ─── TOAST ─── */
   .toast {
     position: fixed;
@@ -845,6 +891,7 @@
     .btn-solution, .btn-hint, .btn-bookmark { justify-content: center; }
     .check-completed { width: 100%; margin-left: 0; padding-top: 4px; }
     .modal { padding: 18px; max-height: 90vh; overflow-y: auto; }
+    .creator-footer { align-items: flex-start; flex-direction: column; }
   }
 
   /* ─── SEARCH HIGHLIGHT ─── */
@@ -916,6 +963,15 @@
 
     <div id="sectionsContainer"></div>
     <div class="no-results" id="noResults" style="display:none"><span class="emoji">🔍</span>No questions found. Try a different search term.</div>
+
+    <footer class="creator-footer">
+      <span>Made by <strong>Jeet Prajapati</strong></span>
+      <div class="footer-links">
+        <button class="footer-link" onclick="openInfoModal('aboutModal')">About Me</button>
+        <button class="footer-link" onclick="openInfoModal('contactModal')">Contact Me</button>
+        <a class="footer-link" href="https://portfolio-theta-lake-97.vercel.app" target="_blank" rel="noopener noreferrer">Portfolio</a>
+      </div>
+    </footer>
   </main>
 </div>
 
@@ -929,6 +985,26 @@
       <button class="btn-solution" onclick="toggleRandomSol()" id="randomSolBtn">▶ Show Solution</button>
       <button class="random-btn" onclick="showRandom()" style="margin-left:0">🎲 Another</button>
       <button class="filter-btn" style="margin-left:auto" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="aboutModal">
+  <div class="modal">
+    <h2>About Me <button class="modal-close" onclick="closeInfoModal('aboutModal')">✕</button></h2>
+    <div class="info-panel">
+      I am Jeet Prajapati, the creator of PySprint Studio. I built this project to make Python practice more organized, focused, and beginner friendly with questions, hints, notes, progress tracking, and solutions in one frontend-only app.
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="contactModal">
+  <div class="modal">
+    <h2>Contact Me <button class="modal-close" onclick="closeInfoModal('contactModal')">✕</button></h2>
+    <div class="info-panel">
+      <p>Email: <a href="mailto:jeetprajapati677@gmail.com">jeetprajapati677@gmail.com</a></p>
+      <p>GitHub: <a href="https://github.com/Jeet3107" target="_blank" rel="noopener noreferrer">github.com/Jeet3107</a></p>
+      <p>Portfolio: <a href="https://portfolio-theta-lake-97.vercel.app" target="_blank" rel="noopener noreferrer">portfolio-theta-lake-97.vercel.app</a></p>
     </div>
   </div>
 </div>
@@ -2401,6 +2477,15 @@ function toggleRandomSol() {
 
 function closeModal() { document.getElementById('randomModal').classList.remove('open'); }
 
+function openInfoModal(id) {
+  document.getElementById(id)?.classList.add('open');
+}
+
+function closeInfoModal(id) {
+  document.getElementById(id)?.classList.remove('open');
+}
+
+
 // ═══════════════════════════════════════════════════════
 //  COPY CODE
 // ═══════════════════════════════════════════════════════
@@ -2517,13 +2602,15 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.1, rootMargin: '-80px 0px -60% 0px' });
 
 // Modal backdrop close
-document.getElementById('randomModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
+document.querySelectorAll('[id$="Modal"].modal-overlay').forEach(modal => {
+  modal.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+  });
 });
 
 // Keyboard shortcut
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(modal => modal.classList.remove('open'));
   if (e.key === '/' && !e.ctrlKey) { e.preventDefault(); document.getElementById('searchBar').focus(); }
 });
 
