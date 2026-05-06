@@ -1,0 +1,2547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PySprint Studio — Python Practice Platform</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0a0c10;
+    --bg2: #0f1219;
+    --bg3: #151b26;
+    --surface: #1a2233;
+    --surface2: #1f2a3d;
+    --border: #2a3a52;
+    --accent: #00e5ff;
+    --accent-on: #001013;
+    --accent2: #7c3aed;
+    --accent2-text: #a78bfa;
+    --accent3: #f59e0b;
+    --accent3-on: #111827;
+    --green: #10b981;
+    --green-on: #00140d;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --code-bg: #0d1117;
+    --keyword: #ff79c6;
+    --string: #f1fa8c;
+    --comment: #6272a4;
+    --func: #50fa7b;
+    --number: #bd93f9;
+    --builtin: #8be9fd;
+  }
+  .light {
+    --bg: #f0f4f8;
+    --bg2: #e8edf5;
+    --bg3: #dde4ef;
+    --surface: #ffffff;
+    --surface2: #f8fafc;
+    --border: #cbd5e1;
+    --accent: #007c89;
+    --accent-on: #ffffff;
+    --accent2: #5b21b6;
+    --accent2-text: #5b21b6;
+    --accent3: #a16207;
+    --accent3-on: #ffffff;
+    --green: #047857;
+    --green-on: #ffffff;
+    --red: #b91c1c;
+    --text: #0f172a;
+    --text2: #475569;
+    --text3: #94a3b8;
+    --code-bg: #1e2430;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  /* ─── GRID BACKGROUND ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  body.light::before { background-image: none; }
+
+  /* ─── HEADER ─── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,12,16,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .light header { background: rgba(240,244,248,0.95); }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo span { color: var(--text2); font-weight: 400; font-size: 0.8rem; }
+
+  .header-center {
+    flex: 1;
+    max-width: 480px;
+    position: relative;
+  }
+  #searchBar {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    padding: 8px 16px 8px 36px;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  #searchBar:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,255,0.1); }
+  #searchBar::placeholder { color: var(--text3); }
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text3);
+    font-size: 0.9rem;
+    pointer-events: none;
+  }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  .progress-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 0.8rem;
+    color: var(--text2);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .progress-pill strong { color: var(--green); font-family: 'JetBrains Mono', monospace; }
+
+  .btn-icon {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .btn-icon:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-icon.danger:hover { border-color: var(--red); color: var(--red); }
+
+  .hidden-input { display: none; }
+
+  /* ─── LAYOUT ─── */
+  .layout {
+    display: flex;
+    position: relative;
+    z-index: 1;
+    min-height: calc(100vh - 64px);
+  }
+
+  /* ─── SIDEBAR ─── */
+  aside {
+    width: 240px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 64px;
+    height: calc(100vh - 64px);
+    overflow-y: auto;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  aside::-webkit-scrollbar { width: 4px; }
+  aside::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .sidebar-section { margin-bottom: 8px; }
+  .sidebar-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 6px 20px;
+    margin-top: 8px;
+  }
+  .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    font-size: 0.82rem;
+    color: var(--text2);
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+    text-decoration: none;
+    background: none;
+    border-top: none;
+    border-right: none;
+    border-bottom: none;
+    width: 100%;
+    text-align: left;
+  }
+  .sidebar-link:hover { color: var(--text); background: var(--surface); border-left-color: var(--border); }
+  .sidebar-link.active { color: var(--accent); background: rgba(0,229,255,0.06); border-left-color: var(--accent); }
+  .sidebar-link .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text3);
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .sidebar-link.active .dot { background: var(--accent); }
+  .sidebar-link .count {
+    margin-left: auto;
+    font-size: 0.7rem;
+    background: var(--surface2);
+    padding: 1px 6px;
+    border-radius: 10px;
+    color: var(--text3);
+  }
+
+  /* ─── MAIN ─── */
+  main {
+    flex: 1;
+    padding: 32px 40px;
+    min-width: 0;
+    max-width: 900px;
+  }
+
+  /* ─── HERO BAR ─── */
+  .hero-bar {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--bg3) 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-bar::after {
+    content: '</>';
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 5rem;
+    font-weight: 700;
+    color: rgba(0,229,255,0.05);
+    pointer-events: none;
+  }
+  .hero-bar h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .hero-bar h1 em { color: var(--accent); font-style: normal; }
+  .hero-bar p { color: var(--text2); font-size: 0.875rem; margin-top: 4px; }
+  .hero-copy { min-width: 0; }
+  .hero-stats { display: flex; gap: 20px; flex-shrink: 0; }
+  .stat { text-align: center; }
+  .stat .val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+  }
+  .stat .lbl { font-size: 0.7rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .progress-track {
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    margin-top: 16px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--green), var(--accent));
+    border-radius: inherit;
+    transition: width 0.25s ease;
+  }
+
+  .utility-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: -14px 0 22px;
+    color: var(--text3);
+    font-size: 0.78rem;
+  }
+  .utility-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .mini-btn {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .mini-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .mini-btn.danger:hover { border-color: var(--red); color: var(--red); }
+
+  /* ─── FILTER BUTTONS ─── */
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .filter-btn {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    font-size: 0.8rem;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.active { background: var(--accent); color: var(--accent-on); border-color: var(--accent); font-weight: 600; }
+  .filter-btn.beginner.active { background: var(--green); border-color: var(--green); }
+  .filter-btn.intermediate.active { background: var(--accent3); border-color: var(--accent3); }
+  .filter-btn.advanced.active { background: var(--red); border-color: var(--red); }
+  .filter-btn.patterns.active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+  .filter-btn.logical.active { background: var(--accent); border-color: var(--accent); }
+  .filter-btn.saved.active { background: var(--green); border-color: var(--green); color: var(--green-on); }
+
+  .random-btn {
+    margin-left: auto;
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--accent2);
+    background: rgba(124,58,237,0.1);
+    color: var(--accent2);
+    font-size: 0.8rem;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .random-btn:hover { background: var(--accent2); color: #fff; }
+
+  /* ─── SECTION ─── */
+  .section {
+    margin-bottom: 32px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid transparent;
+    transition: background 0.2s;
+    background: var(--surface2);
+  }
+  .section-header:hover { background: var(--bg3); }
+  .section-header.open { border-bottom-color: var(--border); }
+
+  .section-badge {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+  .badge-beginner { background: rgba(16,185,129,0.15); color: var(--green); }
+  .badge-intermediate { background: rgba(245,158,11,0.15); color: var(--accent3); }
+  .badge-advanced { background: rgba(239,68,68,0.15); color: var(--red); }
+  .badge-patterns { background: rgba(124,58,237,0.15); color: var(--accent2-text); }
+  .badge-logical { background: rgba(0,229,255,0.15); color: var(--accent); }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+  }
+  .section-meta { font-size: 0.75rem; color: var(--text3); }
+  .section-chevron {
+    color: var(--text3);
+    font-size: 0.8rem;
+    transition: transform 0.3s;
+    flex-shrink: 0;
+  }
+  .section-header.open .section-chevron { transform: rotate(180deg); }
+
+  .section-body { display: none; padding: 0; }
+  .section-body.open { display: block; }
+
+  /* ─── TOPIC ─── */
+  .topic {
+    border-bottom: 1px solid var(--border);
+  }
+  .topic:last-child { border-bottom: none; }
+
+  .topic-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    cursor: pointer;
+    background: var(--surface);
+    transition: background 0.15s;
+  }
+  .topic-header:hover { background: var(--bg3); }
+  .topic-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text2);
+    flex: 1;
+  }
+  .topic-chevron { color: var(--text3); font-size: 0.7rem; transition: transform 0.3s; }
+  .topic-header.open .topic-chevron { transform: rotate(180deg); }
+  .topic-body { display: none; padding: 4px 0 12px; }
+  .topic-body.open { display: block; }
+
+  /* ─── QUESTION CARD ─── */
+  .q-card {
+    margin: 8px 20px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .q-card:hover { border-color: var(--text3); }
+  .q-card.completed { border-color: var(--green); }
+  .q-card.completed .q-header { background: rgba(16,185,129,0.05); }
+  .q-card.bookmarked { border-color: rgba(245,158,11,0.65); }
+
+  .q-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+  .q-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    background: rgba(0,229,255,0.08);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    border: 1px solid rgba(0,229,255,0.15);
+  }
+  .q-text {
+    flex: 1;
+    font-size: 0.875rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .q-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .q-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text3);
+    padding: 2px 8px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .q-chip.beginner { color: var(--green); border-color: rgba(16,185,129,0.35); }
+  .q-chip.intermediate { color: var(--accent3); border-color: rgba(245,158,11,0.35); }
+  .q-chip.advanced { color: var(--red); border-color: rgba(239,68,68,0.35); }
+  .q-text code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--builtin);
+  }
+  .q-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--bg2);
+    flex-wrap: wrap;
+  }
+
+  .btn-solution, .btn-hint, .btn-bookmark {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem;
+    padding: 5px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--accent2);
+    background: rgba(124,58,237,0.08);
+    color: var(--accent2-text);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-solution:hover { background: var(--accent2); color: #fff; }
+  .btn-solution.shown { background: rgba(124,58,237,0.2); }
+  .btn-hint {
+    border-color: var(--accent3);
+    background: rgba(245,158,11,0.08);
+    color: var(--accent3);
+  }
+  .btn-hint:hover, .btn-hint.shown { background: var(--accent3); color: var(--accent3-on); }
+  .btn-bookmark {
+    border-color: var(--border);
+    background: transparent;
+    color: var(--text3);
+    padding: 5px 10px;
+  }
+  .btn-bookmark:hover, .btn-bookmark.saved {
+    border-color: var(--accent3);
+    color: var(--accent3);
+    background: rgba(245,158,11,0.08);
+  }
+
+  .check-completed {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--text3);
+    cursor: pointer;
+    margin-left: auto;
+  }
+  .check-completed input[type=checkbox] {
+    width: 15px; height: 15px;
+    accent-color: var(--green);
+    cursor: pointer;
+  }
+  .check-completed:hover { color: var(--green); }
+
+  .hint-block {
+    display: none;
+    margin: 0 16px 12px;
+    border: 1px solid rgba(245,158,11,0.35);
+    background: rgba(245,158,11,0.08);
+    color: var(--text2);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    line-height: 1.55;
+  }
+  .hint-block.open { display: block; }
+
+  .notes-wrap {
+    margin: 0 16px 14px;
+  }
+  .notes-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--text3);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .notes-input {
+    width: 100%;
+    min-height: 70px;
+    resize: vertical;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    outline: none;
+  }
+  .notes-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,255,0.08); }
+
+  /* ─── IO EXAMPLE ─── */
+  .io-example {
+    margin: 6px 16px 0;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+  .io-example .io-label { color: var(--text3); font-size: 0.7rem; margin-bottom: 2px; }
+  .io-in { color: var(--builtin); }
+  .io-out { color: var(--string); }
+
+  /* ─── SOLUTION BLOCK ─── */
+  .solution-block {
+    display: none;
+    margin: 0 16px 14px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    animation: slideDown 0.2s ease;
+  }
+  @keyframes slideDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+  .solution-block.open { display: block; }
+
+  .sol-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .sol-title { font-size: 0.72rem; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
+  .copy-btn {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+  }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  pre.code-block {
+    background: var(--code-bg);
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.7;
+    tab-size: 4;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  pre.code-block::-webkit-scrollbar { height: 4px; }
+  pre.code-block::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .kw { color: var(--keyword); }
+  .st { color: var(--string); }
+  .cm { color: var(--comment); font-style: italic; }
+  .fn { color: var(--func); }
+  .nu { color: var(--number); }
+  .bi { color: var(--builtin); }
+
+  /* ─── PATTERN OUTPUT ─── */
+  .pattern-output {
+    margin: 6px 16px 0;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--accent3);
+    white-space: pre;
+    line-height: 1.4;
+  }
+
+  /* ─── RANDOM MODAL ─── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 560px;
+    width: 90%;
+    animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes popIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
+  .modal h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .modal-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text3);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .modal-close:hover { color: var(--text); }
+  .modal-question { font-size: 0.9rem; color: var(--text); line-height: 1.6; margin-bottom: 16px; }
+  .modal-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: var(--surface2);
+    border: 1px solid var(--green);
+    color: var(--green);
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    z-index: 2000;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 768px) {
+    header {
+      height: auto;
+      min-height: 64px;
+      padding: 12px 14px;
+      flex-wrap: wrap;
+    }
+    .logo { width: 100%; font-size: 1.2rem; }
+    .logo span { display: none; }
+    .header-center {
+      order: 3;
+      max-width: none;
+      width: 100%;
+      flex-basis: 100%;
+    }
+    .header-right { margin-left: auto; }
+    .layout { min-height: calc(100vh - 112px); }
+    aside { display: none; }
+    main { padding: 16px; max-width: none; }
+    .hero-bar {
+      align-items: flex-start;
+      border-radius: 10px;
+      padding: 18px;
+    }
+    .hero-bar::after { display: none; }
+    .hero-bar h1 { font-size: 1.25rem; }
+    .hero-stats { display: none; }
+    .utility-row {
+      align-items: flex-start;
+      flex-direction: column;
+      margin-top: -12px;
+    }
+    .filter-row { gap: 6px; }
+    .filter-btn, .random-btn { font-size: 0.75rem; padding: 6px 10px; }
+    .random-btn { margin-left: 0; }
+    .section-header, .topic-header, .q-header, .q-actions { padding-left: 12px; padding-right: 12px; }
+    .q-card { margin-left: 12px; margin-right: 12px; border-radius: 8px; }
+    .q-actions { align-items: stretch; }
+    .btn-solution, .btn-hint, .btn-bookmark { justify-content: center; }
+    .check-completed { width: 100%; margin-left: 0; padding-top: 4px; }
+    .modal { padding: 18px; max-height: 90vh; overflow-y: auto; }
+  }
+
+  /* ─── SEARCH HIGHLIGHT ─── */
+  .search-match { background: rgba(245,158,11,0.25); border-radius: 2px; }
+
+  /* ─── NO RESULTS ─── */
+  .no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text3);
+    font-size: 0.9rem;
+  }
+  .no-results .emoji { font-size: 3rem; display: block; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">⚡ PySprint Studio <span>Python Practice Platform</span></div>
+  <div class="header-center">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchBar" placeholder="Search questions, topics, notes, solutions..." oninput="handleSearch(this.value)">
+  </div>
+  <div class="header-right">
+    <div class="progress-pill">✅ <strong id="solvedCount">0</strong> solved</div>
+    <button class="btn-icon" onclick="exportProgress()" title="Export progress" id="exportBtn">⇩</button>
+    <button class="btn-icon" onclick="document.getElementById('importFile').click()" title="Import progress" id="importBtn">⇧</button>
+    <button class="btn-icon" onclick="toggleTheme()" title="Toggle theme" id="themeBtn">🌙</button>
+  </div>
+  <input class="hidden-input" type="file" id="importFile" accept="application/json" onchange="importProgress(event)">
+</header>
+
+<div class="layout">
+  <aside id="sidebar"></aside>
+  <main id="mainContent">
+    <div class="hero-bar">
+      <div class="hero-copy">
+        <h1>Master <em>Python</em> from Zero to Hero</h1>
+        <p>Structured practice with solutions, patterns &amp; real problems</p>
+        <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><span class="val" id="totalQ">0</span><span class="lbl">Questions</span></div>
+        <div class="stat"><span class="val" id="totalSec">0</span><span class="lbl">Sections</span></div>
+        <div class="stat"><span class="val" id="pctDone">0%</span><span class="lbl">Complete</span></div>
+        <div class="stat"><span class="val" id="bookmarkCount">0</span><span class="lbl">Saved</span></div>
+      </div>
+    </div>
+
+    <div class="utility-row">
+      <span id="statusLine">Ready for practice.</span>
+      <div class="utility-actions">
+        <button class="mini-btn" onclick="expandAll()">Expand all</button>
+        <button class="mini-btn" onclick="collapseAll()">Collapse all</button>
+        <button class="mini-btn danger" onclick="resetProgress()">Reset progress</button>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="filterBy('all', this)">All</button>
+      <button class="filter-btn beginner" onclick="filterBy('beginner', this)">🟢 Beginner</button>
+      <button class="filter-btn intermediate" onclick="filterBy('intermediate', this)">🟡 Intermediate</button>
+      <button class="filter-btn advanced" onclick="filterBy('advanced', this)">🔴 Advanced</button>
+      <button class="filter-btn patterns" onclick="filterBy('patterns', this)">🔷 Patterns</button>
+      <button class="filter-btn logical" onclick="filterBy('logical', this)">🧠 Logical</button>
+      <button class="filter-btn saved" onclick="filterBy('saved', this)">Saved</button>
+      <button class="random-btn" onclick="showRandom()">🎲 Random Question</button>
+    </div>
+
+    <div id="sectionsContainer"></div>
+    <div class="no-results" id="noResults" style="display:none"><span class="emoji">🔍</span>No questions found. Try a different search term.</div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="randomModal">
+  <div class="modal">
+    <h2>🎲 Random Challenge <button class="modal-close" onclick="closeModal()">✕</button></h2>
+    <div id="randomTag" class="modal-tag"></div>
+    <div id="randomQuestion" class="modal-question"></div>
+    <div id="randomSolution" class="solution-block"></div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn-solution" onclick="toggleRandomSol()" id="randomSolBtn">▶ Show Solution</button>
+      <button class="random-btn" onclick="showRandom()" style="margin-left:0">🎲 Another</button>
+      <button class="filter-btn" style="margin-left:auto" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════════
+const DATA = [
+  // ─── BEGINNER ─────────────────────────────────────────
+  {
+    id: 'beginner', title: 'Beginner Python', badge: 'beginner', level: 'beginner',
+    topics: [
+      {
+        title: 'Variables & Data Types',
+        questions: [
+          { q: 'Declare variables of 5 different data types: int, float, string, bool, and None. Print each with its type.', solution: `<span class="cm"># Variables of different data types</span>
+age = <span class="nu">25</span>                  <span class="cm"># int</span>
+price = <span class="nu">99.99</span>              <span class="cm"># float</span>
+name = <span class="st">"Alice"</span>             <span class="cm"># str</span>
+is_active = <span class="kw">True</span>           <span class="cm"># bool</span>
+nothing = <span class="kw">None</span>              <span class="cm"># NoneType</span>
+
+<span class="bi">print</span>(<span class="bi">type</span>(age), age)
+<span class="bi">print</span>(<span class="bi">type</span>(price), price)
+<span class="bi">print</span>(<span class="bi">type</span>(name), name)
+<span class="bi">print</span>(<span class="bi">type</span>(is_active), is_active)
+<span class="bi">print</span>(<span class="bi">type</span>(nothing), nothing)` },
+          { q: 'Swap two variables <code>a = 10</code> and <code>b = 20</code> without using a third variable.', solution: `a = <span class="nu">10</span>
+b = <span class="nu">20</span>
+<span class="bi">print</span>(<span class="st">f"Before: a={a}, b={b}"</span>)
+
+<span class="cm"># Pythonic swap using tuple unpacking</span>
+a, b = b, a
+<span class="bi">print</span>(<span class="st">f"After: a={a}, b={b}"</span>)` },
+          { q: 'Convert an integer to float, float to int, and int to string. Show each conversion.', solution: `num_int = <span class="nu">42</span>
+num_float = <span class="nu">3.14</span>
+
+<span class="cm"># int → float</span>
+result1 = <span class="bi">float</span>(num_int)
+<span class="bi">print</span>(<span class="st">f"int to float: {result1}"</span>)  <span class="cm"># 42.0</span>
+
+<span class="cm"># float → int (truncates decimal)</span>
+result2 = <span class="bi">int</span>(num_float)
+<span class="bi">print</span>(<span class="st">f"float to int: {result2}"</span>)   <span class="cm"># 3</span>
+
+<span class="cm"># int → string</span>
+result3 = <span class="bi">str</span>(num_int)
+<span class="bi">print</span>(<span class="st">f"int to str: '{result3}'"</span>)    <span class="cm"># '42'</span>` },
+          { q: 'Check if a variable is of a specific type using <code>isinstance()</code>. Test with int, str, and list.', solution: `x = <span class="nu">100</span>
+y = <span class="st">"hello"</span>
+z = [<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>]
+
+<span class="bi">print</span>(<span class="bi">isinstance</span>(x, <span class="bi">int</span>))    <span class="cm"># True</span>
+<span class="bi">print</span>(<span class="bi">isinstance</span>(y, <span class="bi">str</span>))    <span class="cm"># True</span>
+<span class="bi">print</span>(<span class="bi">isinstance</span>(z, <span class="bi">list</span>))   <span class="cm"># True</span>
+<span class="bi">print</span>(<span class="bi">isinstance</span>(x, <span class="bi">str</span>))    <span class="cm"># False</span>` },
+          { q: 'Calculate the area and perimeter of a rectangle given length = 8 and width = 5.', solution: `length = <span class="nu">8</span>
+width = <span class="nu">5</span>
+
+area = length * width
+perimeter = <span class="nu">2</span> * (length + width)
+
+<span class="bi">print</span>(<span class="st">f"Area: {area}"</span>)           <span class="cm"># 40</span>
+<span class="bi">print</span>(<span class="st">f"Perimeter: {perimeter}"</span>)  <span class="cm"># 26</span>` },
+          { q: 'Take temperature in Celsius as input and convert it to Fahrenheit. Formula: F = C × 9/5 + 32', io: 'Input: 100\nOutput: 212.0°F', solution: `celsius = <span class="bi">float</span>(<span class="bi">input</span>(<span class="st">"Enter temperature in Celsius: "</span>))
+
+<span class="cm"># Conversion formula</span>
+fahrenheit = (celsius * <span class="nu">9</span>/<span class="nu">5</span>) + <span class="nu">32</span>
+
+<span class="bi">print</span>(<span class="st">f"{celsius}°C = {fahrenheit}°F"</span>)` },
+          { q: 'Store your full name, age, city, and hobby in variables. Print them in a formatted sentence.', solution: `name = <span class="st">"Jeet Prajapati"</span>
+age = <span class="nu">22</span>
+city = <span class="st">"Ahmedabad"</span>
+hobby = <span class="st">"coding"</span>
+
+<span class="bi">print</span>(<span class="st">f"Hi! I'm {name}, {age} years old from {city}."</span>)
+<span class="bi">print</span>(<span class="st">f"My favourite hobby is {hobby}."</span>)` },
+          { q: 'Find the maximum of 3 numbers using only the <code>max()</code> function and without it (manual comparison).', solution: `a, b, c = <span class="nu">15</span>, <span class="nu">42</span>, <span class="nu">7</span>
+
+<span class="cm"># Method 1: Using built-in max()</span>
+<span class="bi">print</span>(<span class="st">"Using max():"</span>, <span class="bi">max</span>(a, b, c))   <span class="cm"># 42</span>
+
+<span class="cm"># Method 2: Manual comparison</span>
+<span class="kw">if</span> a >= b <span class="kw">and</span> a >= c:
+    largest = a
+<span class="kw">elif</span> b >= a <span class="kw">and</span> b >= c:
+    largest = b
+<span class="kw">else</span>:
+    largest = c
+<span class="bi">print</span>(<span class="st">"Manual:"</span>, largest)             <span class="cm"># 42</span>` },
+        ]
+      },
+      {
+        title: 'Input & Output',
+        questions: [
+          { q: 'Take two numbers as input from the user and print their sum, difference, product, and quotient.', io: 'Input: 10 4\nOutput: Sum=14, Diff=6, Product=40, Quotient=2.5', solution: `a = <span class="bi">float</span>(<span class="bi">input</span>(<span class="st">"Enter first number: "</span>))
+b = <span class="bi">float</span>(<span class="bi">input</span>(<span class="st">"Enter second number: "</span>))
+
+<span class="bi">print</span>(<span class="st">f"Sum      : {a + b}"</span>)
+<span class="bi">print</span>(<span class="st">f"Diff     : {a - b}"</span>)
+<span class="bi">print</span>(<span class="st">f"Product  : {a * b}"</span>)
+<span class="bi">print</span>(<span class="st">f"Quotient : {a / b}"</span>)` },
+          { q: 'Accept a name from the user and greet them. If no name is given, default to "Guest".', io: 'Input: Jeet\nOutput: Hello, Jeet!', solution: `name = <span class="bi">input</span>(<span class="st">"Enter your name: "</span>).strip()
+
+<span class="cm"># Use default if input is empty</span>
+<span class="kw">if</span> <span class="kw">not</span> name:
+    name = <span class="st">"Guest"</span>
+
+<span class="bi">print</span>(<span class="st">f"Hello, {name}!"</span>)` },
+          { q: 'Read 3 integers on a single line (space-separated) and print their average.', io: 'Input: 10 20 30\nOutput: Average: 20.0', solution: `nums = <span class="bi">list</span>(<span class="bi">map</span>(<span class="bi">int</span>, <span class="bi">input</span>(<span class="st">"Enter 3 numbers: "</span>).split()))
+average = <span class="bi">sum</span>(nums) / <span class="bi">len</span>(nums)
+<span class="bi">print</span>(<span class="st">f"Average: {average}"</span>)` },
+          { q: 'Print numbers from 1 to 10 on a single line separated by spaces using <code>print()</code> options.', io: 'Output: 1 2 3 4 5 6 7 8 9 10', solution: `<span class="cm"># Using end parameter in print()</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">1</span>, <span class="nu">11</span>):
+    <span class="bi">print</span>(i, end=<span class="st">" "</span>)
+
+<span class="cm"># Alternative: using *unpacking</span>
+<span class="bi">print</span>(*<span class="bi">range</span>(<span class="nu">1</span>, <span class="nu">11</span>))` },
+          { q: 'Format a bill receipt: item name, quantity, unit price as input. Print total with proper alignment.', solution: `item = <span class="bi">input</span>(<span class="st">"Item name: "</span>)
+qty  = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Quantity: "</span>))
+price = <span class="bi">float</span>(<span class="bi">input</span>(<span class="st">"Unit price: "</span>))
+total = qty * price
+
+<span class="bi">print</span>(<span class="st">"-" * 30</span>)
+<span class="bi">print</span>(<span class="st">f"{'Item':<span class="nu">15</span>} {'Qty':^5} {'Price':>8}"</span>)
+<span class="bi">print</span>(<span class="st">"-" * 30</span>)
+<span class="bi">print</span>(<span class="st">f"{item:<span class="nu">15</span>} {qty:^5} {price:>8.2f}"</span>)
+<span class="bi">print</span>(<span class="st">"-" * 30</span>)
+<span class="bi">print</span>(<span class="st">f"{'TOTAL':<span class="nu">15</span>} {'':^5} {total:>8.2f}"</span>)` },
+        ]
+      },
+      {
+        title: 'Conditional Statements',
+        questions: [
+          { q: 'Check if a number is positive, negative, or zero.', io: 'Input: -5\nOutput: Negative', solution: `num = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter a number: "</span>))
+
+<span class="kw">if</span> num > <span class="nu">0</span>:
+    <span class="bi">print</span>(<span class="st">"Positive"</span>)
+<span class="kw">elif</span> num < <span class="nu">0</span>:
+    <span class="bi">print</span>(<span class="st">"Negative"</span>)
+<span class="kw">else</span>:
+    <span class="bi">print</span>(<span class="st">"Zero"</span>)` },
+          { q: 'Check if a year is a leap year. A year is a leap year if it is divisible by 4, but not 100, unless also divisible by 400.', io: 'Input: 2000\nOutput: Leap year', solution: `year = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter year: "</span>))
+
+<span class="kw">if</span> (year % <span class="nu">4</span> == <span class="nu">0</span> <span class="kw">and</span> year % <span class="nu">100</span> != <span class="nu">0</span>) <span class="kw">or</span> (year % <span class="nu">400</span> == <span class="nu">0</span>):
+    <span class="bi">print</span>(<span class="st">f"{year} is a Leap Year"</span>)
+<span class="kw">else</span>:
+    <span class="bi">print</span>(<span class="st">f"{year} is NOT a Leap Year"</span>)` },
+          { q: 'Given marks out of 100, assign a grade: A (>=90), B (>=80), C (>=70), D (>=60), F (<60).', io: 'Input: 85\nOutput: Grade B', solution: `marks = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter marks (0-100): "</span>))
+
+<span class="kw">if</span> marks >= <span class="nu">90</span>:
+    grade = <span class="st">"A"</span>
+<span class="kw">elif</span> marks >= <span class="nu">80</span>:
+    grade = <span class="st">"B"</span>
+<span class="kw">elif</span> marks >= <span class="nu">70</span>:
+    grade = <span class="st">"C"</span>
+<span class="kw">elif</span> marks >= <span class="nu">60</span>:
+    grade = <span class="st">"D"</span>
+<span class="kw">else</span>:
+    grade = <span class="st">"F"</span>
+
+<span class="bi">print</span>(<span class="st">f"Marks: {marks} → Grade: {grade}"</span>)` },
+          { q: 'Build a simple calculator that takes two numbers and an operator (+, -, *, /) and computes the result.', io: 'Input: 10 * 5\nOutput: 50', solution: `a = <span class="bi">float</span>(<span class="bi">input</span>(<span class="st">"Enter first number: "</span>))
+op = <span class="bi">input</span>(<span class="st">"Operator (+, -, *, /): "</span>)
+b = <span class="bi">float</span>(<span class="bi">input</span>(<span class="st">"Enter second number: "</span>))
+
+<span class="kw">if</span> op == <span class="st">"+"</span>:   result = a + b
+<span class="kw">elif</span> op == <span class="st">"-"</span>: result = a - b
+<span class="kw">elif</span> op == <span class="st">"*"</span>: result = a * b
+<span class="kw">elif</span> op == <span class="st">"/"</span>:
+    <span class="kw">if</span> b == <span class="nu">0</span>:
+        <span class="bi">print</span>(<span class="st">"Error: Division by zero!"</span>)
+        exit()
+    result = a / b
+<span class="kw">else</span>:
+    <span class="bi">print</span>(<span class="st">"Invalid operator"</span>)
+    exit()
+
+<span class="bi">print</span>(<span class="st">f"{a} {op} {b} = {result}"</span>)` },
+          { q: 'Check if a person is eligible to vote. Age must be >= 18 and must be a citizen.', solution: `age = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter age: "</span>))
+citizen = <span class="bi">input</span>(<span class="st">"Are you a citizen? (yes/no): "</span>).lower()
+
+<span class="kw">if</span> age >= <span class="nu">18</span> <span class="kw">and</span> citizen == <span class="st">"yes"</span>:
+    <span class="bi">print</span>(<span class="st">"✅ Eligible to vote"</span>)
+<span class="kw">elif</span> age < <span class="nu">18</span>:
+    <span class="bi">print</span>(<span class="st">"❌ Too young to vote"</span>)
+<span class="kw">else</span>:
+    <span class="bi">print</span>(<span class="st">"❌ Must be a citizen to vote"</span>)` },
+          { q: 'Use nested if-else to categorize a triangle as Equilateral, Isosceles, or Scalene based on 3 sides.', solution: `a = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Side a: "</span>))
+b = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Side b: "</span>))
+c = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Side c: "</span>))
+
+<span class="cm"># First check if it's a valid triangle</span>
+<span class="kw">if</span> a + b > c <span class="kw">and</span> b + c > a <span class="kw">and</span> a + c > b:
+    <span class="kw">if</span> a == b == c:
+        <span class="bi">print</span>(<span class="st">"Equilateral Triangle"</span>)
+    <span class="kw">elif</span> a == b <span class="kw">or</span> b == c <span class="kw">or</span> a == c:
+        <span class="bi">print</span>(<span class="st">"Isosceles Triangle"</span>)
+    <span class="kw">else</span>:
+        <span class="bi">print</span>(<span class="st">"Scalene Triangle"</span>)
+<span class="kw">else</span>:
+    <span class="bi">print</span>(<span class="st">"Not a valid triangle"</span>)` },
+          { q: 'Write a program to find the largest of 4 numbers using nested if-else (no built-in max).', solution: `a, b, c, d = <span class="bi">map</span>(<span class="bi">int</span>, <span class="bi">input</span>(<span class="st">"Enter 4 numbers: "</span>).split())
+
+<span class="kw">if</span> a >= b <span class="kw">and</span> a >= c <span class="kw">and</span> a >= d:
+    largest = a
+<span class="kw">elif</span> b >= a <span class="kw">and</span> b >= c <span class="kw">and</span> b >= d:
+    largest = b
+<span class="kw">elif</span> c >= a <span class="kw">and</span> c >= b <span class="kw">and</span> c >= d:
+    largest = c
+<span class="kw">else</span>:
+    largest = d
+
+<span class="bi">print</span>(<span class="st">f"Largest: {largest}"</span>)` },
+          { q: 'Check if a number is divisible by both 3 and 5 (FizzBuzz for a single number).', io: 'Input: 15\nOutput: FizzBuzz', solution: `n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter number: "</span>))
+
+<span class="kw">if</span> n % <span class="nu">15</span> == <span class="nu">0</span>:
+    <span class="bi">print</span>(<span class="st">"FizzBuzz"</span>)
+<span class="kw">elif</span> n % <span class="nu">3</span> == <span class="nu">0</span>:
+    <span class="bi">print</span>(<span class="st">"Fizz"</span>)
+<span class="kw">elif</span> n % <span class="nu">5</span> == <span class="nu">0</span>:
+    <span class="bi">print</span>(<span class="st">"Buzz"</span>)
+<span class="kw">else</span>:
+    <span class="bi">print</span>(n)` },
+        ]
+      },
+      {
+        title: 'Loops',
+        questions: [
+          { q: 'Print FizzBuzz for numbers 1–100. Multiples of 3 print "Fizz", multiples of 5 print "Buzz", both print "FizzBuzz".', solution: `<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">1</span>, <span class="nu">101</span>):
+    <span class="kw">if</span> i % <span class="nu">15</span> == <span class="nu">0</span>:
+        <span class="bi">print</span>(<span class="st">"FizzBuzz"</span>)
+    <span class="kw">elif</span> i % <span class="nu">3</span> == <span class="nu">0</span>:
+        <span class="bi">print</span>(<span class="st">"Fizz"</span>)
+    <span class="kw">elif</span> i % <span class="nu">5</span> == <span class="nu">0</span>:
+        <span class="bi">print</span>(<span class="st">"Buzz"</span>)
+    <span class="kw">else</span>:
+        <span class="bi">print</span>(i)` },
+          { q: 'Use a while loop to guess a secret number. Give "Too High", "Too Low", or "Correct!" hints.', solution: `secret = <span class="nu">42</span>
+attempts = <span class="nu">0</span>
+
+<span class="kw">while</span> <span class="kw">True</span>:
+    guess = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Guess the number: "</span>))
+    attempts += <span class="nu">1</span>
+    
+    <span class="kw">if</span> guess < secret:
+        <span class="bi">print</span>(<span class="st">"Too Low! Try again."</span>)
+    <span class="kw">elif</span> guess > secret:
+        <span class="bi">print</span>(<span class="st">"Too High! Try again."</span>)
+    <span class="kw">else</span>:
+        <span class="bi">print</span>(<span class="st">f"✅ Correct! Took {attempts} attempts."</span>)
+        <span class="kw">break</span>` },
+          { q: 'Print the multiplication table for a given number n (from 1×n to 10×n).', io: 'Input: 7\nOutput: 7×1=7, 7×2=14 ...', solution: `n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter number: "</span>))
+
+<span class="bi">print</span>(<span class="st">f"Multiplication Table of {n}"</span>)
+<span class="bi">print</span>(<span class="st">"-" * 20</span>)
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">1</span>, <span class="nu">11</span>):
+    <span class="bi">print</span>(<span class="st">f"{n} × {i:2} = {n * i}"</span>)` },
+          { q: 'Sum all even numbers and odd numbers separately between 1 and 100.', solution: `even_sum = odd_sum = <span class="nu">0</span>
+
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">1</span>, <span class="nu">101</span>):
+    <span class="kw">if</span> i % <span class="nu">2</span> == <span class="nu">0</span>:
+        even_sum += i
+    <span class="kw">else</span>:
+        odd_sum += i
+
+<span class="bi">print</span>(<span class="st">f"Sum of even numbers: {even_sum}"</span>)  <span class="cm"># 2550</span>
+<span class="bi">print</span>(<span class="st">f"Sum of odd numbers:  {odd_sum}"</span>)   <span class="cm"># 2500</span>` },
+          { q: 'Use nested loops to print a 5×5 multiplication matrix.', solution: `<span class="bi">print</span>(<span class="st">"    "</span>, end=<span class="st">""</span>)
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">1</span>, <span class="nu">6</span>):
+    <span class="bi">print</span>(<span class="st">f"{i:4}"</span>, end=<span class="st">""</span>)
+<span class="bi">print</span>()
+<span class="bi">print</span>(<span class="st">"-" * 24</span>)
+
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">1</span>, <span class="nu">6</span>):
+    <span class="bi">print</span>(<span class="st">f"{i} |"</span>, end=<span class="st">""</span>)
+    <span class="kw">for</span> j <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">1</span>, <span class="nu">6</span>):
+        <span class="bi">print</span>(<span class="st">f"{i*j:4}"</span>, end=<span class="st">""</span>)
+    <span class="bi">print</span>()` },
+          { q: 'Use a for loop with <code>enumerate()</code> to print items in a list with their index (1-based).', solution: `fruits = [<span class="st">"apple"</span>, <span class="st">"banana"</span>, <span class="st">"cherry"</span>, <span class="st">"mango"</span>]
+
+<span class="kw">for</span> idx, fruit <span class="kw">in</span> <span class="bi">enumerate</span>(fruits, start=<span class="nu">1</span>):
+    <span class="bi">print</span>(<span class="st">f"{idx}. {fruit}"</span>)` },
+          { q: 'Print all prime numbers between 2 and 50 using a nested loop.', solution: `<span class="bi">print</span>(<span class="st">"Primes between 2 and 50:"</span>)
+<span class="kw">for</span> num <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">2</span>, <span class="nu">51</span>):
+    is_prime = <span class="kw">True</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">2</span>, <span class="bi">int</span>(num**<span class="nu">0.5</span>) + <span class="nu">1</span>):
+        <span class="kw">if</span> num % i == <span class="nu">0</span>:
+            is_prime = <span class="kw">False</span>
+            <span class="kw">break</span>
+    <span class="kw">if</span> is_prime:
+        <span class="bi">print</span>(num, end=<span class="st">" "</span>)` },
+          { q: 'Reverse a number using a while loop. E.g. 1234 → 4321.', io: 'Input: 1234\nOutput: 4321', solution: `n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter number: "</span>))
+original = n
+reversed_num = <span class="nu">0</span>
+
+<span class="kw">while</span> n > <span class="nu">0</span>:
+    digit = n % <span class="nu">10</span>          <span class="cm"># Extract last digit</span>
+    reversed_num = reversed_num * <span class="nu">10</span> + digit
+    n //= <span class="nu">10</span>               <span class="cm"># Remove last digit</span>
+
+<span class="bi">print</span>(<span class="st">f"Reversed: {reversed_num}"</span>)` },
+        ]
+      },
+      {
+        title: 'Strings',
+        questions: [
+          { q: 'Count vowels, consonants, spaces, and special characters in a given string.', io: 'Input: "Hello World!"\nOutput: Vowels:3, Consonants:7, Spaces:1, Special:1', solution: `text = <span class="bi">input</span>(<span class="st">"Enter a string: "</span>)
+vowels = consonants = spaces = special = <span class="nu">0</span>
+
+<span class="kw">for</span> ch <span class="kw">in</span> text.lower():
+    <span class="kw">if</span> ch <span class="kw">in</span> <span class="st">"aeiou"</span>:
+        vowels += <span class="nu">1</span>
+    <span class="kw">elif</span> ch.isalpha():
+        consonants += <span class="nu">1</span>
+    <span class="kw">elif</span> ch == <span class="st">" "</span>:
+        spaces += <span class="nu">1</span>
+    <span class="kw">else</span>:
+        special += <span class="nu">1</span>
+
+<span class="bi">print</span>(<span class="st">f"Vowels: {vowels}, Consonants: {consonants}"</span>)
+<span class="bi">print</span>(<span class="st">f"Spaces: {spaces}, Special: {special}"</span>)` },
+          { q: 'Reverse a string without using built-in reverse. Then check if it is a palindrome.', io: 'Input: "racecar"\nOutput: Palindrome!', solution: `s = <span class="bi">input</span>(<span class="st">"Enter string: "</span>)
+
+<span class="cm"># Manual reverse using slicing</span>
+reversed_s = s[:<span class="nu">:</span>-<span class="nu">1</span>]
+
+<span class="bi">print</span>(<span class="st">f"Reversed: {reversed_s}"</span>)
+
+<span class="kw">if</span> s.lower() == reversed_s.lower():
+    <span class="bi">print</span>(<span class="st">"✅ Palindrome!"</span>)
+<span class="kw">else</span>:
+    <span class="bi">print</span>(<span class="st">"❌ Not a palindrome"</span>)` },
+          { q: 'Replace all spaces with underscores and convert string to title case.', io: 'Input: "hello world python"\nOutput: "Hello_World_Python"', solution: `s = <span class="bi">input</span>(<span class="st">"Enter string: "</span>)
+
+result = s.title().replace(<span class="st">" "</span>, <span class="st">"_"</span>)
+<span class="bi">print</span>(result)` },
+          { q: 'Check if two strings are anagrams of each other (ignore case and spaces).', io: 'Input: "listen" "silent"\nOutput: Anagram!', solution: `s1 = <span class="bi">input</span>(<span class="st">"String 1: "</span>).lower().replace(<span class="st">" "</span>, <span class="st">""</span>)
+s2 = <span class="bi">input</span>(<span class="st">"String 2: "</span>).lower().replace(<span class="st">" "</span>, <span class="st">""</span>)
+
+<span class="kw">if</span> <span class="bi">sorted</span>(s1) == <span class="bi">sorted</span>(s2):
+    <span class="bi">print</span>(<span class="st">"✅ Anagram!"</span>)
+<span class="kw">else</span>:
+    <span class="bi">print</span>(<span class="st">"❌ Not an anagram"</span>)` },
+          { q: 'Find and count all occurrences of a word in a sentence (case-insensitive).', solution: `sentence = <span class="bi">input</span>(<span class="st">"Enter sentence: "</span>).lower()
+word = <span class="bi">input</span>(<span class="st">"Find word: "</span>).lower()
+count = sentence.split().count(word)
+<span class="bi">print</span>(<span class="st">f"'{word}' appears {count} time(s)"</span>)` },
+          { q: 'Truncate a string to a max of N characters and add "..." if truncated.', solution: `s = <span class="bi">input</span>(<span class="st">"Enter string: "</span>)
+n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Max length: "</span>))
+
+result = s[:n] + (<span class="st">"..."</span> <span class="kw">if</span> <span class="bi">len</span>(s) > n <span class="kw">else</span> <span class="st">""</span>)
+<span class="bi">print</span>(result)` },
+          { q: 'Extract only digits from a mixed string like "abc123def456".', io: 'Input: "abc123def456"\nOutput: "123456"', solution: `s = <span class="bi">input</span>(<span class="st">"Enter mixed string: "</span>)
+
+digits = <span class="st">""</span>.join(ch <span class="kw">for</span> ch <span class="kw">in</span> s <span class="kw">if</span> ch.isdigit())
+<span class="bi">print</span>(<span class="st">f"Digits only: {digits}"</span>)` },
+          { q: 'Capitalize the first letter of each word using only loop logic (no .title()).', solution: `s = <span class="bi">input</span>(<span class="st">"Enter string: "</span>)
+words = s.split()
+result = <span class="st">" "</span>.join(word[<span class="nu">0</span>].upper() + word[<span class="nu">1</span>:].lower() <span class="kw">for</span> word <span class="kw">in</span> words)
+<span class="bi">print</span>(result)` },
+        ]
+      },
+      {
+        title: 'Lists',
+        questions: [
+          { q: 'Create a list of 10 numbers. Find min, max, sum, and average without built-in functions.', solution: `nums = [<span class="nu">4</span>, <span class="nu">2</span>, <span class="nu">9</span>, <span class="nu">7</span>, <span class="nu">1</span>, <span class="nu">5</span>, <span class="nu">8</span>, <span class="nu">3</span>, <span class="nu">6</span>, <span class="nu">10</span>]
+
+mn = mx = nums[<span class="nu">0</span>]
+total = <span class="nu">0</span>
+
+<span class="kw">for</span> n <span class="kw">in</span> nums:
+    <span class="kw">if</span> n < mn: mn = n
+    <span class="kw">if</span> n > mx: mx = n
+    total += n
+
+<span class="bi">print</span>(<span class="st">f"Min: {mn}, Max: {mx}"</span>)
+<span class="bi">print</span>(<span class="st">f"Sum: {total}, Avg: {total/<span class="bi">len</span>(nums)}"</span>)` },
+          { q: 'Remove duplicates from a list while preserving insertion order.', io: 'Input: [1,2,3,2,4,1,5]\nOutput: [1,2,3,4,5]', solution: `lst = [<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">2</span>, <span class="nu">4</span>, <span class="nu">1</span>, <span class="nu">5</span>]
+
+seen = <span class="bi">set</span>()
+unique = []
+<span class="kw">for</span> item <span class="kw">in</span> lst:
+    <span class="kw">if</span> item <span class="kw">not in</span> seen:
+        unique.append(item)
+        seen.add(item)
+
+<span class="bi">print</span>(<span class="st">f"Unique: {unique}"</span>)` },
+          { q: 'Flatten a 2D list into a 1D list using list comprehension.', io: 'Input: [[1,2],[3,4],[5,6]]\nOutput: [1,2,3,4,5,6]', solution: `matrix = [[<span class="nu">1</span>,<span class="nu">2</span>],[<span class="nu">3</span>,<span class="nu">4</span>],[<span class="nu">5</span>,<span class="nu">6</span>]]
+
+flat = [item <span class="kw">for</span> row <span class="kw">in</span> matrix <span class="kw">for</span> item <span class="kw">in</span> row]
+<span class="bi">print</span>(flat)  <span class="cm"># [1, 2, 3, 4, 5, 6]</span>` },
+          { q: 'Rotate a list left by k positions. E.g. [1,2,3,4,5] rotated by 2 → [3,4,5,1,2].', solution: `lst = [<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">4</span>, <span class="nu">5</span>]
+k = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Rotate by: "</span>))
+
+k = k % <span class="bi">len</span>(lst)   <span class="cm"># Handle k > length</span>
+rotated = lst[k:] + lst[:k]
+<span class="bi">print</span>(<span class="st">f"Rotated: {rotated}"</span>)` },
+          { q: 'Sort a list of strings by their length (ascending). Use only <code>.sort()</code> with key parameter.', solution: `words = [<span class="st">"banana"</span>, <span class="st">"kiwi"</span>, <span class="st">"apple"</span>, <span class="st">"mango"</span>, <span class="st">"fig"</span>]
+
+words.sort(key=<span class="bi">len</span>)
+<span class="bi">print</span>(words)   <span class="cm"># ['fig', 'kiwi', 'apple', 'mango', 'banana']</span>` },
+        ]
+      },
+    ]
+  },
+
+  // ─── INTERMEDIATE ─────────────────────────────────────
+  {
+    id: 'intermediate', title: 'Intermediate Python', badge: 'intermediate', level: 'intermediate',
+    topics: [
+      {
+        title: 'Dictionaries',
+        questions: [
+          { q: 'Create a frequency counter dictionary for characters in a string.', io: 'Input: "hello"\nOutput: {h:1, e:1, l:2, o:1}', solution: `text = <span class="bi">input</span>(<span class="st">"Enter string: "</span>)
+freq = {}
+
+<span class="kw">for</span> ch <span class="kw">in</span> text:
+    freq[ch] = freq.get(ch, <span class="nu">0</span>) + <span class="nu">1</span>
+
+<span class="bi">print</span>(freq)
+
+<span class="cm"># Or using collections.Counter</span>
+<span class="kw">from</span> collections <span class="kw">import</span> Counter
+<span class="bi">print</span>(Counter(text))` },
+          { q: 'Merge two dictionaries. If a key exists in both, sum their values.', solution: `d1 = {<span class="st">"a"</span>: <span class="nu">1</span>, <span class="st">"b"</span>: <span class="nu">2</span>, <span class="st">"c"</span>: <span class="nu">3</span>}
+d2 = {<span class="st">"b"</span>: <span class="nu">4</span>, <span class="st">"c"</span>: <span class="nu">5</span>, <span class="st">"d"</span>: <span class="nu">6</span>}
+
+merged = {**d1}   <span class="cm"># Copy d1</span>
+<span class="kw">for</span> k, v <span class="kw">in</span> d2.items():
+    merged[k] = merged.get(k, <span class="nu">0</span>) + v
+
+<span class="bi">print</span>(merged)  <span class="cm"># {'a':1,'b':6,'c':8,'d':6}</span>` },
+          { q: 'Sort a dictionary by values in descending order. Return top 3 items.', solution: `scores = {<span class="st">"Alice"</span>: <span class="nu">88</span>, <span class="st">"Bob"</span>: <span class="nu">95</span>, <span class="st">"Carol"</span>: <span class="nu">72</span>, <span class="st">"Dan"</span>: <span class="nu">91</span>}
+
+sorted_scores = <span class="bi">sorted</span>(scores.items(), key=<span class="kw">lambda</span> x: x[<span class="nu">1</span>], reverse=<span class="kw">True</span>)
+
+<span class="bi">print</span>(<span class="st">"Top 3:"</span>)
+<span class="kw">for</span> name, score <span class="kw">in</span> sorted_scores[:<span class="nu">3</span>]:
+    <span class="bi">print</span>(<span class="st">f"  {name}: {score}"</span>)` },
+          { q: 'Invert a dictionary (swap keys and values). Handle duplicate values by collecting keys in a list.', solution: `d = {<span class="st">"a"</span>: <span class="nu">1</span>, <span class="st">"b"</span>: <span class="nu">2</span>, <span class="st">"c"</span>: <span class="nu">1</span>, <span class="st">"d"</span>: <span class="nu">3</span>}
+inverted = {}
+
+<span class="kw">for</span> key, val <span class="kw">in</span> d.items():
+    inverted.setdefault(val, []).append(key)
+
+<span class="bi">print</span>(inverted)  <span class="cm"># {1:['a','c'], 2:['b'], 3:['d']}</span>` },
+          { q: 'Build a simple student grade book: store names and marks, print sorted by grade, compute class average.', solution: `students = {}
+n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Number of students: "</span>))
+
+<span class="kw">for</span> _ <span class="kw">in</span> <span class="bi">range</span>(n):
+    name = <span class="bi">input</span>(<span class="st">"Name: "</span>)
+    mark = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">f"Mark for {name}: "</span>))
+    students[name] = mark
+
+<span class="bi">print</span>(<span class="st">"\n=== Grade Book ==="</span>)
+<span class="kw">for</span> name, mark <span class="kw">in</span> <span class="bi">sorted</span>(students.items(), key=<span class="kw">lambda</span> x: -x[<span class="nu">1</span>]):
+    <span class="bi">print</span>(<span class="st">f"{name:<span class="nu">15</span>} : {mark}"</span>)
+<span class="bi">print</span>(<span class="st">f"\nClass Average: {<span class="bi">sum</span>(students.values())/<span class="bi">len</span>(students):.2f}"</span>)` },
+        ]
+      },
+      {
+        title: 'Functions',
+        questions: [
+          { q: 'Write a function that returns the factorial of n using both iterative and recursive approaches.', solution: `<span class="cm"># Iterative approach</span>
+<span class="kw">def</span> <span class="fn">factorial_iter</span>(n):
+    result = <span class="nu">1</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">2</span>, n + <span class="nu">1</span>):
+        result *= i
+    <span class="kw">return</span> result
+
+<span class="cm"># Recursive approach</span>
+<span class="kw">def</span> <span class="fn">factorial_rec</span>(n):
+    <span class="kw">if</span> n <= <span class="nu">1</span>: <span class="kw">return</span> <span class="nu">1</span>
+    <span class="kw">return</span> n * factorial_rec(n - <span class="nu">1</span>)
+
+n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter n: "</span>))
+<span class="bi">print</span>(<span class="st">f"Iterative: {factorial_iter(n)}"</span>)
+<span class="bi">print</span>(<span class="st">f"Recursive: {factorial_rec(n)}"</span>)` },
+          { q: 'Create a function with *args and **kwargs. Demonstrate how it handles variable arguments.', solution: `<span class="kw">def</span> <span class="fn">describe_person</span>(*args, **kwargs):
+    <span class="bi">print</span>(<span class="st">"Positional args:"</span>, args)
+    <span class="bi">print</span>(<span class="st">"Keyword args:"</span>)
+    <span class="kw">for</span> k, v <span class="kw">in</span> kwargs.items():
+        <span class="bi">print</span>(<span class="st">f"  {k} = {v}"</span>)
+
+describe_person(<span class="st">"Alice"</span>, <span class="nu">30</span>, city=<span class="st">"Ahmedabad"</span>, role=<span class="st">"Developer"</span>)` },
+          { q: 'Write a function <code>memoize(fn)</code> that caches results of expensive function calls.', solution: `<span class="kw">def</span> <span class="fn">memoize</span>(fn):
+    cache = {}
+    <span class="kw">def</span> <span class="fn">wrapper</span>(*args):
+        <span class="kw">if</span> args <span class="kw">not in</span> cache:
+            cache[args] = fn(*args)
+        <span class="kw">return</span> cache[args]
+    <span class="kw">return</span> wrapper
+
+<span class="cm"># Example: memoized Fibonacci</span>
+@memoize
+<span class="kw">def</span> <span class="fn">fib</span>(n):
+    <span class="kw">if</span> n <= <span class="nu">1</span>: <span class="kw">return</span> n
+    <span class="kw">return</span> fib(n - <span class="nu">1</span>) + fib(n - <span class="nu">2</span>)
+
+<span class="bi">print</span>(fib(<span class="nu">40</span>))  <span class="cm"># Very fast due to caching</span>` },
+          { q: 'Create a lambda function to sort a list of tuples by the second element.', solution: `students = [(<span class="st">"Alice"</span>, <span class="nu">85</span>), (<span class="st">"Bob"</span>, <span class="nu">92</span>), (<span class="st">"Carol"</span>, <span class="nu">78</span>)]
+
+<span class="cm"># Sort by second element (marks) in descending order</span>
+sorted_students = <span class="bi">sorted</span>(students, key=<span class="kw">lambda</span> x: x[<span class="nu">1</span>], reverse=<span class="kw">True</span>)
+<span class="bi">print</span>(sorted_students)
+
+<span class="cm"># Using map and filter</span>
+high_scorers = <span class="bi">list</span>(<span class="bi">filter</span>(<span class="kw">lambda</span> x: x[<span class="nu">1</span>] >= <span class="nu">85</span>, students))
+<span class="bi">print</span>(<span class="st">"High scorers:"</span>, high_scorers)` },
+          { q: 'Write a generator function that yields Fibonacci numbers up to a limit n.', solution: `<span class="kw">def</span> <span class="fn">fibonacci_gen</span>(limit):
+    a, b = <span class="nu">0</span>, <span class="nu">1</span>
+    <span class="kw">while</span> a <= limit:
+        <span class="kw">yield</span> a
+        a, b = b, a + b
+
+<span class="cm"># Print all Fibonacci numbers up to 100</span>
+<span class="kw">for</span> num <span class="kw">in</span> fibonacci_gen(<span class="nu">100</span>):
+    <span class="bi">print</span>(num, end=<span class="st">" "</span>)` },
+          { q: 'Implement a function with default parameters and show how they work with and without arguments.', solution: `<span class="kw">def</span> <span class="fn">greet</span>(name, greeting=<span class="st">"Hello"</span>, punctuation=<span class="st">"!"</span>):
+    <span class="kw">return</span> <span class="st">f"{greeting}, {name}{punctuation}"</span>
+
+<span class="bi">print</span>(greet(<span class="st">"Alice"</span>))                      <span class="cm"># Hello, Alice!</span>
+<span class="bi">print</span>(greet(<span class="st">"Bob"</span>, <span class="st">"Hey"</span>))                 <span class="cm"># Hey, Bob!</span>
+<span class="bi">print</span>(greet(<span class="st">"Carol"</span>, <span class="st">"Namaste"</span>, <span class="st">"."</span>))      <span class="cm"># Namaste, Carol.</span>` },
+          { q: 'Use <code>map()</code>, <code>filter()</code>, and <code>reduce()</code> to process a list of numbers.', solution: `<span class="kw">from</span> functools <span class="kw">import</span> reduce
+
+nums = [<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">4</span>, <span class="nu">5</span>, <span class="nu">6</span>, <span class="nu">7</span>, <span class="nu">8</span>, <span class="nu">9</span>, <span class="nu">10</span>]
+
+<span class="cm"># map: square each number</span>
+squares = <span class="bi">list</span>(<span class="bi">map</span>(<span class="kw">lambda</span> x: x**<span class="nu">2</span>, nums))
+<span class="bi">print</span>(<span class="st">"Squares:"</span>, squares)
+
+<span class="cm"># filter: keep only even numbers</span>
+evens = <span class="bi">list</span>(<span class="bi">filter</span>(<span class="kw">lambda</span> x: x % <span class="nu">2</span> == <span class="nu">0</span>, nums))
+<span class="bi">print</span>(<span class="st">"Evens:"</span>, evens)
+
+<span class="cm"># reduce: product of all numbers</span>
+product = reduce(<span class="kw">lambda</span> x, y: x * y, nums)
+<span class="bi">print</span>(<span class="st">"Product:"</span>, product)` },
+        ]
+      },
+      {
+        title: 'Exception Handling',
+        questions: [
+          { q: 'Handle division by zero, invalid input, and type errors in a single try-except block.', solution: `<span class="kw">try</span>:
+    a = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Numerator: "</span>))
+    b = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Denominator: "</span>))
+    result = a / b
+    <span class="bi">print</span>(<span class="st">f"Result: {result}"</span>)
+
+<span class="kw">except</span> ZeroDivisionError:
+    <span class="bi">print</span>(<span class="st">"❌ Cannot divide by zero!"</span>)
+<span class="kw">except</span> ValueError:
+    <span class="bi">print</span>(<span class="st">"❌ Please enter valid integers!"</span>)
+<span class="kw">except</span> Exception <span class="kw">as</span> e:
+    <span class="bi">print</span>(<span class="st">f"❌ Unexpected error: {e}"</span>)
+<span class="kw">else</span>:
+    <span class="bi">print</span>(<span class="st">"✅ Operation successful"</span>)
+<span class="kw">finally</span>:
+    <span class="bi">print</span>(<span class="st">"Program finished."</span>)` },
+          { q: 'Create a custom exception class <code>AgeError</code> and raise it when age is negative or > 150.', solution: `<span class="kw">class</span> <span class="fn">AgeError</span>(Exception):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, age, message=<span class="st">"Invalid age"</span>):
+        self.age = age
+        self.message = message
+        <span class="bi">super</span>().__init__(self.message)
+    
+    <span class="kw">def</span> <span class="fn">__str__</span>(self):
+        <span class="kw">return</span> <span class="st">f"AgeError: {self.message} (got {self.age})"</span>
+
+<span class="kw">def</span> <span class="fn">validate_age</span>(age):
+    <span class="kw">if</span> age < <span class="nu">0</span>:
+        <span class="kw">raise</span> AgeError(age, <span class="st">"Age cannot be negative"</span>)
+    <span class="kw">if</span> age > <span class="nu">150</span>:
+        <span class="kw">raise</span> AgeError(age, <span class="st">"Age unrealistically high"</span>)
+    <span class="kw">return</span> <span class="st">f"Valid age: {age}"</span>
+
+<span class="kw">try</span>:
+    <span class="bi">print</span>(validate_age(-<span class="nu">5</span>))
+<span class="kw">except</span> AgeError <span class="kw">as</span> e:
+    <span class="bi">print</span>(e)` },
+          { q: 'Write a safe file reader that handles FileNotFoundError and PermissionError gracefully.', solution: `<span class="kw">def</span> <span class="fn">safe_read_file</span>(filename):
+    <span class="kw">try</span>:
+        <span class="kw">with</span> <span class="bi">open</span>(filename, <span class="st">"r"</span>) <span class="kw">as</span> f:
+            content = f.read()
+            <span class="bi">print</span>(<span class="st">f"✅ Read {<span class="bi">len</span>(content)} characters"</span>)
+            <span class="kw">return</span> content
+    <span class="kw">except</span> FileNotFoundError:
+        <span class="bi">print</span>(<span class="st">f"❌ File '{filename}' not found"</span>)
+    <span class="kw">except</span> PermissionError:
+        <span class="bi">print</span>(<span class="st">f"❌ No permission to read '{filename}'"</span>)
+    <span class="kw">except</span> Exception <span class="kw">as</span> e:
+        <span class="bi">print</span>(<span class="st">f"❌ Error: {e}"</span>)
+    <span class="kw">return</span> <span class="kw">None</span>
+
+safe_read_file(<span class="st">"test.txt"</span>)` },
+          { q: 'Use context managers (<code>with</code>) to safely handle file and resource operations.', solution: `<span class="cm"># Writing to a file safely</span>
+<span class="kw">with</span> <span class="bi">open</span>(<span class="st">"output.txt"</span>, <span class="st">"w"</span>) <span class="kw">as</span> f:
+    f.write(<span class="st">"Hello, World!\n"</span>)
+    f.write(<span class="st">"Python is awesome!\n"</span>)
+
+<span class="cm"># Reading back - file closes automatically</span>
+<span class="kw">with</span> <span class="bi">open</span>(<span class="st">"output.txt"</span>, <span class="st">"r"</span>) <span class="kw">as</span> f:
+    <span class="kw">for</span> line <span class="kw">in</span> f:
+        <span class="bi">print</span>(line.strip())
+
+<span class="cm"># Custom context manager</span>
+<span class="kw">class</span> <span class="fn">Timer</span>:
+    <span class="kw">import</span> time
+    <span class="kw">def</span> <span class="fn">__enter__</span>(self):
+        self.start = __import__(<span class="st">'time'</span>).time()
+        <span class="kw">return</span> self
+    <span class="kw">def</span> <span class="fn">__exit__</span>(self, *args):
+        elapsed = __import__(<span class="st">'time'</span>).time() - self.start
+        <span class="bi">print</span>(<span class="st">f"Elapsed: {elapsed:.4f}s"</span>)
+
+<span class="kw">with</span> Timer():
+    total = <span class="bi">sum</span>(<span class="bi">range</span>(<span class="nu">1000000</span>))` },
+        ]
+      },
+      {
+        title: 'File Handling',
+        questions: [
+          { q: 'Write a program that writes lines to a file, reads it back, and counts words and lines.', solution: `filename = <span class="st">"sample.txt"</span>
+
+<span class="cm"># Write content</span>
+<span class="kw">with</span> <span class="bi">open</span>(filename, <span class="st">"w"</span>) <span class="kw">as</span> f:
+    f.write(<span class="st">"Hello World\n"</span>)
+    f.write(<span class="st">"Python is great\n"</span>)
+    f.write(<span class="st">"File handling is important\n"</span>)
+
+<span class="cm"># Read and analyze</span>
+<span class="kw">with</span> <span class="bi">open</span>(filename, <span class="st">"r"</span>) <span class="kw">as</span> f:
+    content = f.read()
+
+lines = content.strip().split(<span class="st">"\n"</span>)
+words = content.split()
+
+<span class="bi">print</span>(<span class="st">f"Lines: {<span class="bi">len</span>(lines)}"</span>)
+<span class="bi">print</span>(<span class="st">f"Words: {<span class="bi">len</span>(words)}"</span>)
+<span class="bi">print</span>(<span class="st">f"Characters: {<span class="bi">len</span>(content)}"</span>)` },
+          { q: 'Append to a log file with timestamps each time the program runs.', solution: `<span class="kw">from</span> datetime <span class="kw">import</span> datetime
+
+<span class="kw">def</span> <span class="fn">log_event</span>(message, logfile=<span class="st">"app.log"</span>):
+    timestamp = datetime.now().strftime(<span class="st">"%Y-%m-%d %H:%M:%S"</span>)
+    entry = <span class="st">f"[{timestamp}] {message}\n"</span>
+    
+    <span class="kw">with</span> <span class="bi">open</span>(logfile, <span class="st">"a"</span>) <span class="kw">as</span> f:
+        f.write(entry)
+    <span class="bi">print</span>(<span class="st">f"Logged: {entry.strip()}"</span>)
+
+log_event(<span class="st">"Application started"</span>)
+log_event(<span class="st">"User logged in"</span>)
+log_event(<span class="st">"Data processed successfully"</span>)` },
+          { q: 'Read a CSV-like file (comma-separated), parse it into a list of dicts, and print as a table.', solution: `<span class="cm"># Create sample CSV file</span>
+csv_data = <span class="st">"""name,age,city
+Alice,30,Mumbai
+Bob,25,Delhi
+Carol,28,Bangalore"""</span>
+
+<span class="kw">with</span> <span class="bi">open</span>(<span class="st">"data.csv"</span>, <span class="st">"w"</span>) <span class="kw">as</span> f:
+    f.write(csv_data)
+
+<span class="cm"># Read and parse</span>
+<span class="kw">with</span> <span class="bi">open</span>(<span class="st">"data.csv"</span>) <span class="kw">as</span> f:
+    lines = f.read().strip().split(<span class="st">"\n"</span>)
+
+headers = lines[<span class="nu">0</span>].split(<span class="st">","</span>)
+records = [<span class="bi">dict</span>(<span class="bi">zip</span>(headers, row.split(<span class="st">","</span>))) <span class="kw">for</span> row <span class="kw">in</span> lines[<span class="nu">1</span>:]]
+
+<span class="cm"># Print as table</span>
+<span class="bi">print</span>(<span class="st">f"{'Name':<span class="nu">10</span>} {'Age':<span class="nu">5</span>} {'City':<span class="nu">12</span>}"</span>)
+<span class="bi">print</span>(<span class="st">"-" * 30</span>)
+<span class="kw">for</span> r <span class="kw">in</span> records:
+    <span class="bi">print</span>(<span class="st">f"{r['name']:<span class="nu">10</span>} {r['age']:<span class="nu">5</span>} {r['city']:<span class="nu">12</span>}"</span>)` },
+        ]
+      },
+    ]
+  },
+
+  // ─── ADVANCED ─────────────────────────────────────────
+  {
+    id: 'advanced', title: 'Advanced Python', badge: 'advanced', level: 'advanced',
+    topics: [
+      {
+        title: 'OOP — Classes & Inheritance',
+        questions: [
+          { q: 'Design a <code>BankAccount</code> class with deposit, withdraw, and statement methods. Protect the balance using a property.', solution: `<span class="kw">class</span> <span class="fn">BankAccount</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, owner, initial=<span class="nu">0</span>):
+        self.owner = owner
+        self._balance = initial
+        self._transactions = []
+
+    @property
+    <span class="kw">def</span> <span class="fn">balance</span>(self):
+        <span class="kw">return</span> self._balance
+
+    <span class="kw">def</span> <span class="fn">deposit</span>(self, amount):
+        <span class="kw">if</span> amount <= <span class="nu">0</span>:
+            <span class="kw">raise</span> ValueError(<span class="st">"Deposit must be positive"</span>)
+        self._balance += amount
+        self._transactions.append((<span class="st">"+deposit"</span>, amount))
+
+    <span class="kw">def</span> <span class="fn">withdraw</span>(self, amount):
+        <span class="kw">if</span> amount > self._balance:
+            <span class="kw">raise</span> ValueError(<span class="st">"Insufficient funds"</span>)
+        self._balance -= amount
+        self._transactions.append((<span class="st">"-withdraw"</span>, amount))
+
+    <span class="kw">def</span> <span class="fn">statement</span>(self):
+        <span class="bi">print</span>(<span class="st">f"Account: {self.owner}"</span>)
+        <span class="kw">for</span> t, amt <span class="kw">in</span> self._transactions:
+            <span class="bi">print</span>(<span class="st">f"  {t}: ₹{amt}"</span>)
+        <span class="bi">print</span>(<span class="st">f"  Balance: ₹{self._balance}"</span>)
+
+acc = BankAccount(<span class="st">"Jeet"</span>, <span class="nu">1000</span>)
+acc.deposit(<span class="nu">500</span>)
+acc.withdraw(<span class="nu">200</span>)
+acc.statement()` },
+          { q: 'Implement inheritance: base class <code>Animal</code>, subclasses <code>Dog</code> and <code>Cat</code> with overridden <code>speak()</code> method.', solution: `<span class="kw">class</span> <span class="fn">Animal</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, name, age):
+        self.name = name
+        self.age = age
+
+    <span class="kw">def</span> <span class="fn">speak</span>(self):
+        <span class="kw">raise</span> NotImplementedError(<span class="st">"Subclass must implement speak()"</span>)
+
+    <span class="kw">def</span> <span class="fn">__str__</span>(self):
+        <span class="kw">return</span> <span class="st">f"{self.__class__.__name__}({self.name}, {self.age}y)"</span>
+
+<span class="kw">class</span> <span class="fn">Dog</span>(Animal):
+    <span class="kw">def</span> <span class="fn">speak</span>(self):
+        <span class="kw">return</span> <span class="st">f"{self.name} says: Woof! 🐕"</span>
+
+<span class="kw">class</span> <span class="fn">Cat</span>(Animal):
+    <span class="kw">def</span> <span class="fn">speak</span>(self):
+        <span class="kw">return</span> <span class="st">f"{self.name} says: Meow! 🐈"</span>
+
+animals = [Dog(<span class="st">"Max"</span>, <span class="nu">3</span>), Cat(<span class="st">"Luna"</span>, <span class="nu">2</span>), Dog(<span class="st">"Rex"</span>, <span class="nu">5</span>)]
+<span class="kw">for</span> a <span class="kw">in</span> animals:
+    <span class="bi">print</span>(a, <span class="st">"→"</span>, a.speak())` },
+          { q: 'Implement a <code>Stack</code> class with push, pop, peek, is_empty, and __len__ using magic methods.', solution: `<span class="kw">class</span> <span class="fn">Stack</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        self._data = []
+
+    <span class="kw">def</span> <span class="fn">push</span>(self, item):
+        self._data.append(item)
+
+    <span class="kw">def</span> <span class="fn">pop</span>(self):
+        <span class="kw">if</span> self.is_empty():
+            <span class="kw">raise</span> IndexError(<span class="st">"Stack underflow"</span>)
+        <span class="kw">return</span> self._data.pop()
+
+    <span class="kw">def</span> <span class="fn">peek</span>(self):
+        <span class="kw">if</span> self.is_empty():
+            <span class="kw">raise</span> IndexError(<span class="st">"Stack is empty"</span>)
+        <span class="kw">return</span> self._data[-<span class="nu">1</span>]
+
+    <span class="kw">def</span> <span class="fn">is_empty</span>(self): <span class="kw">return</span> <span class="bi">len</span>(self._data) == <span class="nu">0</span>
+    <span class="kw">def</span> <span class="fn">__len__</span>(self):  <span class="kw">return</span> <span class="bi">len</span>(self._data)
+    <span class="kw">def</span> <span class="fn">__repr__</span>(self): <span class="kw">return</span> <span class="st">f"Stack({self._data})"</span>
+
+s = Stack()
+s.push(<span class="nu">10</span>); s.push(<span class="nu">20</span>); s.push(<span class="nu">30</span>)
+<span class="bi">print</span>(s)           <span class="cm"># Stack([10, 20, 30])</span>
+<span class="bi">print</span>(s.pop())     <span class="cm"># 30</span>
+<span class="bi">print</span>(s.peek())    <span class="cm"># 20</span>
+<span class="bi">print</span>(<span class="bi">len</span>(s))      <span class="cm"># 2</span>` },
+          { q: 'Build a <code>Shape</code> hierarchy with abstract method <code>area()</code>. Implement Circle, Rectangle, and Triangle.', solution: `<span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
+<span class="kw">import</span> math
+
+<span class="kw">class</span> <span class="fn">Shape</span>(ABC):
+    @abstractmethod
+    <span class="kw">def</span> <span class="fn">area</span>(self): <span class="kw">pass</span>
+
+    @abstractmethod
+    <span class="kw">def</span> <span class="fn">perimeter</span>(self): <span class="kw">pass</span>
+
+    <span class="kw">def</span> <span class="fn">describe</span>(self):
+        <span class="bi">print</span>(<span class="st">f"{self.__class__.__name__}: area={self.area():.2f}, perimeter={self.perimeter():.2f}"</span>)
+
+<span class="kw">class</span> <span class="fn">Circle</span>(Shape):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, r): self.r = r
+    <span class="kw">def</span> <span class="fn">area</span>(self): <span class="kw">return</span> math.pi * self.r ** <span class="nu">2</span>
+    <span class="kw">def</span> <span class="fn">perimeter</span>(self): <span class="kw">return</span> <span class="nu">2</span> * math.pi * self.r
+
+<span class="kw">class</span> <span class="fn">Rectangle</span>(Shape):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, w, h): self.w, self.h = w, h
+    <span class="kw">def</span> <span class="fn">area</span>(self): <span class="kw">return</span> self.w * self.h
+    <span class="kw">def</span> <span class="fn">perimeter</span>(self): <span class="kw">return</span> <span class="nu">2</span> * (self.w + self.h)
+
+shapes = [Circle(<span class="nu">5</span>), Rectangle(<span class="nu">4</span>, <span class="nu">6</span>)]
+<span class="kw">for</span> s <span class="kw">in</span> shapes:
+    s.describe()` },
+          { q: 'Demonstrate multiple inheritance with MRO. Create classes A, B, C where C inherits from both A and B.', solution: `<span class="kw">class</span> <span class="fn">A</span>:
+    <span class="kw">def</span> <span class="fn">method</span>(self):
+        <span class="bi">print</span>(<span class="st">"A.method()"</span>)
+
+<span class="kw">class</span> <span class="fn">B</span>(A):
+    <span class="kw">def</span> <span class="fn">method</span>(self):
+        <span class="bi">print</span>(<span class="st">"B.method()"</span>)
+        <span class="bi">super</span>().method()
+
+<span class="kw">class</span> <span class="fn">C</span>(A):
+    <span class="kw">def</span> <span class="fn">method</span>(self):
+        <span class="bi">print</span>(<span class="st">"C.method()"</span>)
+        <span class="bi">super</span>().method()
+
+<span class="kw">class</span> <span class="fn">D</span>(B, C):  <span class="cm"># Diamond inheritance</span>
+    <span class="kw">def</span> <span class="fn">method</span>(self):
+        <span class="bi">print</span>(<span class="st">"D.method()"</span>)
+        <span class="bi">super</span>().method()
+
+d = D()
+d.method()
+<span class="bi">print</span>(<span class="st">"MRO:"</span>, [c.__name__ <span class="kw">for</span> c <span class="kw">in</span> D.__mro__])` },
+        ]
+      },
+      {
+        title: 'Recursion',
+        questions: [
+          { q: 'Solve the Tower of Hanoi for n disks using recursion. Print each move.', solution: `<span class="kw">def</span> <span class="fn">hanoi</span>(n, source=<span class="st">"A"</span>, target=<span class="st">"C"</span>, auxiliary=<span class="st">"B"</span>):
+    <span class="kw">if</span> n == <span class="nu">1</span>:
+        <span class="bi">print</span>(<span class="st">f"Move disk 1 from {source} → {target}"</span>)
+        <span class="kw">return</span>
+    hanoi(n - <span class="nu">1</span>, source, auxiliary, target)
+    <span class="bi">print</span>(<span class="st">f"Move disk {n} from {source} → {target}"</span>)
+    hanoi(n - <span class="nu">1</span>, auxiliary, target, source)
+
+n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Number of disks: "</span>))
+hanoi(n)
+<span class="bi">print</span>(<span class="st">f"Total moves: {<span class="nu">2</span>**n - <span class="nu">1</span>}"</span>)` },
+          { q: 'Recursively flatten a deeply nested list: [[1,[2,[3]]],4] → [1,2,3,4].', solution: `<span class="kw">def</span> <span class="fn">flatten</span>(lst):
+    result = []
+    <span class="kw">for</span> item <span class="kw">in</span> lst:
+        <span class="kw">if</span> <span class="bi">isinstance</span>(item, <span class="bi">list</span>):
+            result.extend(flatten(item))   <span class="cm"># Recurse into nested list</span>
+        <span class="kw">else</span>:
+            result.append(item)
+    <span class="kw">return</span> result
+
+nested = [<span class="nu">1</span>, [<span class="nu">2</span>, [<span class="nu">3</span>, [<span class="nu">4</span>, [<span class="nu">5</span>]]]]]
+<span class="bi">print</span>(flatten(nested))  <span class="cm"># [1, 2, 3, 4, 5]</span>` },
+          { q: 'Find all permutations of a string recursively.', io: 'Input: "abc"\nOutput: abc, acb, bac, bca, cab, cba', solution: `<span class="kw">def</span> <span class="fn">permutations</span>(s):
+    <span class="kw">if</span> <span class="bi">len</span>(s) <= <span class="nu">1</span>:
+        <span class="kw">return</span> [s]
+    result = []
+    <span class="kw">for</span> i, ch <span class="kw">in</span> <span class="bi">enumerate</span>(s):
+        rest = s[:i] + s[i+<span class="nu">1</span>:]    <span class="cm"># String without char at i</span>
+        <span class="kw">for</span> perm <span class="kw">in</span> permutations(rest):
+            result.append(ch + perm)
+    <span class="kw">return</span> result
+
+word = <span class="bi">input</span>(<span class="st">"Enter string: "</span>)
+perms = permutations(word)
+<span class="bi">print</span>(<span class="st">f"{<span class="bi">len</span>(perms)} permutations:"</span>)
+<span class="bi">print</span>(<span class="st">", "</span>.join(perms))` },
+        ]
+      },
+    ]
+  },
+
+  // ─── PATTERNS ─────────────────────────────────────────
+  {
+    id: 'patterns', title: 'Pattern Programs', badge: 'patterns', level: 'patterns',
+    topics: [
+      {
+        title: 'Star Patterns',
+        questions: [
+          { q: 'Right Triangle Pattern', patternOutput: '*\n**\n***\n****\n*****', solution: `n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter rows: "</span>))
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">1</span>, n + <span class="nu">1</span>):
+    <span class="bi">print</span>(<span class="st">"*"</span> * i)` },
+          { q: 'Inverted Triangle (Decreasing)', patternOutput: '*****\n****\n***\n**\n*', solution: `n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter rows: "</span>))
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(n, <span class="nu">0</span>, -<span class="nu">1</span>):
+    <span class="bi">print</span>(<span class="st">"*"</span> * i)` },
+          { q: 'Pyramid Pattern (Centered)', patternOutput: '    *\n   ***\n  *****\n *******\n*********', solution: `n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter rows: "</span>))
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">1</span>, n + <span class="nu">1</span>):
+    spaces = <span class="st">" "</span> * (n - i)
+    stars  = <span class="st">"*"</span> * (<span class="nu">2</span> * i - <span class="nu">1</span>)
+    <span class="bi">print</span>(spaces + stars)` },
+          { q: 'Diamond Pattern', patternOutput: '  *\n ***\n*****\n ***\n  *', solution: `n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter rows: "</span>))
+<span class="cm"># Upper half</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">1</span>, n + <span class="nu">1</span>):
+    <span class="bi">print</span>(<span class="st">" "</span> * (n - i) + <span class="st">"*"</span> * (<span class="nu">2</span> * i - <span class="nu">1</span>))
+<span class="cm"># Lower half</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(n - <span class="nu">1</span>, <span class="nu">0</span>, -<span class="nu">1</span>):
+    <span class="bi">print</span>(<span class="st">" "</span> * (n - i) + <span class="st">"*"</span> * (<span class="nu">2</span> * i - <span class="nu">1</span>))` },
+          { q: 'Hollow Rectangle Pattern', patternOutput: '*****\n*   *\n*   *\n*   *\n*****', solution: `rows = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Rows: "</span>))
+cols = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Cols: "</span>))
+
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(rows):
+    <span class="kw">if</span> i == <span class="nu">0</span> <span class="kw">or</span> i == rows - <span class="nu">1</span>:
+        <span class="bi">print</span>(<span class="st">"*"</span> * cols)
+    <span class="kw">else</span>:
+        <span class="bi">print</span>(<span class="st">"*"</span> + <span class="st">" "</span> * (cols - <span class="nu">2</span>) + <span class="st">"*"</span>)` },
+          { q: 'Hourglass / X Pattern', patternOutput: '*   *\n * *\n  *\n * *\n*   *', solution: `n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter size (odd): "</span>))
+<span class="cm"># Upper half</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(n, <span class="nu">0</span>, -<span class="nu">1</span>):
+    spaces = <span class="st">" "</span> * (n - i)
+    inner  = <span class="st">" "</span> * (<span class="nu">2</span> * i - <span class="nu">3</span>) <span class="kw">if</span> i > <span class="nu">1</span> <span class="kw">else</span> <span class="st">""</span>
+    <span class="kw">if</span> i == <span class="nu">1</span>:
+        <span class="bi">print</span>(spaces + <span class="st">"*"</span>)
+    <span class="kw">else</span>:
+        <span class="bi">print</span>(spaces + <span class="st">"*"</span> + inner + <span class="st">"*"</span>)
+<span class="cm"># Lower half</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">2</span>, n + <span class="nu">1</span>):
+    spaces = <span class="st">" "</span> * (n - i)
+    inner  = <span class="st">" "</span> * (<span class="nu">2</span> * i - <span class="nu">3</span>)
+    <span class="bi">print</span>(spaces + <span class="st">"*"</span> + inner + <span class="st">"*"</span>)` },
+        ]
+      },
+      {
+        title: 'Number Patterns',
+        questions: [
+          { q: 'Floyd\'s Triangle', patternOutput: '1\n2 3\n4 5 6\n7 8 9 10', solution: `n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter rows: "</span>))
+num = <span class="nu">1</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">1</span>, n + <span class="nu">1</span>):
+    <span class="kw">for</span> j <span class="kw">in</span> <span class="bi">range</span>(i):
+        <span class="bi">print</span>(num, end=<span class="st">" "</span>)
+        num += <span class="nu">1</span>
+    <span class="bi">print</span>()` },
+          { q: 'Pascal\'s Triangle', patternOutput: '   1\n  1 1\n 1 2 1\n1 3 3 1', solution: `n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter rows: "</span>))
+row = [<span class="nu">1</span>]
+
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(n):
+    <span class="bi">print</span>(<span class="st">" "</span> * (n - i) + <span class="st">" "</span>.join(<span class="bi">map</span>(<span class="bi">str</span>, row)))
+    <span class="cm"># Build next row</span>
+    row = [<span class="nu">1</span>] + [row[j] + row[j+<span class="nu">1</span>] <span class="kw">for</span> j <span class="kw">in</span> <span class="bi">range</span>(<span class="bi">len</span>(row)-<span class="nu">1</span>)] + [<span class="nu">1</span>]` },
+          { q: 'Number Pyramid (increasing each row)', patternOutput: '1\n12\n123\n1234\n12345', solution: `n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter rows: "</span>))
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">1</span>, n + <span class="nu">1</span>):
+    <span class="bi">print</span>(<span class="st">""</span>.join(<span class="bi">str</span>(j) <span class="kw">for</span> j <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">1</span>, i + <span class="nu">1</span>)))` },
+          { q: 'Zigzag Number Pattern', patternOutput: '1\n2 3\n4 3 2\n5 6 7 8\n9 8 7 6 5', solution: `n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter rows: "</span>))
+num = <span class="nu">1</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">1</span>, n + <span class="nu">1</span>):
+    row = [num + j <span class="kw">for</span> j <span class="kw">in</span> <span class="bi">range</span>(i)]
+    <span class="kw">if</span> i % <span class="nu">2</span> == <span class="nu">0</span>:
+        row = row[:<span class="nu">:</span>-<span class="nu">1</span>]
+    <span class="bi">print</span>(<span class="st">" "</span>.join(<span class="bi">map</span>(<span class="bi">str</span>, row)))
+    num += i` },
+        ]
+      },
+    ]
+  },
+
+  // ─── LOGICAL ──────────────────────────────────────────
+  {
+    id: 'logical', title: 'Logical / Problem Solving', badge: 'logical', level: 'logical',
+    topics: [
+      {
+        title: 'Classic Algorithms',
+        questions: [
+          { q: 'Check if a number is prime using the most efficient approach (trial division up to √n).', io: 'Input: 17\nOutput: Prime', solution: `<span class="kw">def</span> <span class="fn">is_prime</span>(n):
+    <span class="kw">if</span> n < <span class="nu">2</span>: <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">if</span> n == <span class="nu">2</span>: <span class="kw">return</span> <span class="kw">True</span>
+    <span class="kw">if</span> n % <span class="nu">2</span> == <span class="nu">0</span>: <span class="kw">return</span> <span class="kw">False</span>
+    <span class="cm"># Only check odd numbers up to sqrt(n)</span>
+    i = <span class="nu">3</span>
+    <span class="kw">while</span> i * i <= n:
+        <span class="kw">if</span> n % i == <span class="nu">0</span>: <span class="kw">return</span> <span class="kw">False</span>
+        i += <span class="nu">2</span>
+    <span class="kw">return</span> <span class="kw">True</span>
+
+n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter number: "</span>))
+<span class="bi">print</span>(<span class="st">"Prime"</span> <span class="kw">if</span> is_prime(n) <span class="kw">else</span> <span class="st">"Not Prime"</span>)` },
+          { q: 'Generate the first n Fibonacci numbers iteratively and recursively. Compare efficiency.', solution: `<span class="kw">def</span> <span class="fn">fib_iter</span>(n):
+    a, b = <span class="nu">0</span>, <span class="nu">1</span>
+    result = []
+    <span class="kw">for</span> _ <span class="kw">in</span> <span class="bi">range</span>(n):
+        result.append(a)
+        a, b = b, a + b
+    <span class="kw">return</span> result
+
+<span class="kw">from</span> functools <span class="kw">import</span> lru_cache
+
+@lru_cache(maxsize=<span class="kw">None</span>)
+<span class="kw">def</span> <span class="fn">fib_rec</span>(n):
+    <span class="kw">if</span> n < <span class="nu">2</span>: <span class="kw">return</span> n
+    <span class="kw">return</span> fib_rec(n-<span class="nu">1</span>) + fib_rec(n-<span class="nu">2</span>)
+
+n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"How many Fibonacci numbers? "</span>))
+<span class="bi">print</span>(<span class="st">"Iterative:"</span>, fib_iter(n))
+<span class="bi">print</span>(<span class="st">"Recursive:"</span>, [fib_rec(i) <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(n)])` },
+          { q: 'Check if a number is a palindrome without converting to a string. E.g. 121 → True, 123 → False.', solution: `<span class="kw">def</span> <span class="fn">is_palindrome_num</span>(n):
+    <span class="kw">if</span> n < <span class="nu">0</span>: <span class="kw">return</span> <span class="kw">False</span>
+    original = n
+    reversed_n = <span class="nu">0</span>
+    <span class="kw">while</span> n > <span class="nu">0</span>:
+        reversed_n = reversed_n * <span class="nu">10</span> + n % <span class="nu">10</span>
+        n //= <span class="nu">10</span>
+    <span class="kw">return</span> original == reversed_n
+
+<span class="kw">for</span> num <span class="kw">in</span> [<span class="nu">121</span>, <span class="nu">1221</span>, <span class="nu">123</span>, <span class="nu">-121</span>]:
+    <span class="bi">print</span>(<span class="st">f"{num}: {is_palindrome_num(num)}"</span>)` },
+          { q: 'Two Sum Problem: Given a list and target, return indices of two numbers that add to target.', io: 'nums=[2,7,11,15], target=9\nOutput: [0,1]', solution: `<span class="kw">def</span> <span class="fn">two_sum</span>(nums, target):
+    <span class="cm"># Use hash map for O(n) solution</span>
+    seen = {}
+    <span class="kw">for</span> i, num <span class="kw">in</span> <span class="bi">enumerate</span>(nums):
+        complement = target - num
+        <span class="kw">if</span> complement <span class="kw">in</span> seen:
+            <span class="kw">return</span> [seen[complement], i]
+        seen[num] = i
+    <span class="kw">return</span> []
+
+nums = [<span class="nu">2</span>, <span class="nu">7</span>, <span class="nu">11</span>, <span class="nu">15</span>]
+target = <span class="nu">9</span>
+<span class="bi">print</span>(two_sum(nums, target))  <span class="cm"># [0, 1]</span>` },
+          { q: 'Find the missing number in an array of 1 to n with one number missing.', io: 'nums=[1,2,4,5], n=5\nOutput: 3', solution: `<span class="kw">def</span> <span class="fn">missing_number</span>(nums):
+    n = <span class="bi">len</span>(nums) + <span class="nu">1</span>
+    expected_sum = n * (n + <span class="nu">1</span>) // <span class="nu">2</span>   <span class="cm"># Formula: n*(n+1)/2</span>
+    <span class="kw">return</span> expected_sum - <span class="bi">sum</span>(nums)
+
+nums = [<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">4</span>, <span class="nu">5</span>, <span class="nu">6</span>]
+<span class="bi">print</span>(<span class="st">f"Missing: {missing_number(nums)}"</span>)  <span class="cm"># 3</span>
+
+<span class="cm"># Alternative: XOR approach (no overflow issues)</span>
+<span class="kw">def</span> <span class="fn">missing_xor</span>(nums):
+    n = <span class="bi">len</span>(nums) + <span class="nu">1</span>
+    xor = <span class="nu">0</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">1</span>, n + <span class="nu">1</span>): xor ^= i
+    <span class="kw">for</span> x <span class="kw">in</span> nums: xor ^= x
+    <span class="kw">return</span> xor` },
+          { q: 'Implement Bubble Sort and Selection Sort. Print the state of the array after each pass.', solution: `<span class="kw">def</span> <span class="fn">bubble_sort</span>(arr):
+    n = <span class="bi">len</span>(arr)
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(n - <span class="nu">1</span>):
+        swapped = <span class="kw">False</span>
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="bi">range</span>(n - <span class="nu">1</span> - i):
+            <span class="kw">if</span> arr[j] > arr[j+<span class="nu">1</span>]:
+                arr[j], arr[j+<span class="nu">1</span>] = arr[j+<span class="nu">1</span>], arr[j]
+                swapped = <span class="kw">True</span>
+        <span class="bi">print</span>(<span class="st">f"Pass {i+<span class="nu">1</span>}: {arr}"</span>)
+        <span class="kw">if not</span> swapped: <span class="kw">break</span>   <span class="cm"># Optimisation</span>
+    <span class="kw">return</span> arr
+
+arr = [<span class="nu">64</span>, <span class="nu">25</span>, <span class="nu">12</span>, <span class="nu">22</span>, <span class="nu">11</span>]
+<span class="bi">print</span>(<span class="st">"Bubble Sort:"</span>)
+<span class="bi">print</span>(bubble_sort(arr[:]))` },
+          { q: 'Check if a string is an anagram of another. Return True/False and explain logic.', solution: `<span class="kw">def</span> <span class="fn">is_anagram</span>(s1, s2):
+    <span class="cm"># Normalize: lowercase, remove spaces</span>
+    s1 = s1.lower().replace(<span class="st">" "</span>, <span class="st">""</span>)
+    s2 = s2.lower().replace(<span class="st">" "</span>, <span class="st">""</span>)
+    
+    <span class="kw">if</span> <span class="bi">len</span>(s1) != <span class="bi">len</span>(s2):
+        <span class="kw">return</span> <span class="kw">False</span>
+    
+    <span class="cm"># Method 1: sort and compare</span>
+    <span class="kw">return</span> <span class="bi">sorted</span>(s1) == <span class="bi">sorted</span>(s2)
+
+pairs = [(<span class="st">"listen"</span>, <span class="st">"silent"</span>), (<span class="st">"hello"</span>, <span class="st">"world"</span>), (<span class="st">"Astronomer"</span>, <span class="st">"Moon starer"</span>)]
+<span class="kw">for</span> a, b <span class="kw">in</span> pairs:
+    <span class="bi">print</span>(<span class="st">f"'{a}' & '{b}': {is_anagram(a, b)}"</span>)` },
+          { q: 'Find the longest common prefix among a list of strings.', io: 'Input: ["flower","flow","flight"]\nOutput: "fl"', solution: `<span class="kw">def</span> <span class="fn">longest_common_prefix</span>(words):
+    <span class="kw">if not</span> words: <span class="kw">return</span> <span class="st">""</span>
+    
+    prefix = words[<span class="nu">0</span>]
+    <span class="kw">for</span> word <span class="kw">in</span> words[<span class="nu">1</span>:]:
+        <span class="cm"># Shrink prefix until it matches</span>
+        <span class="kw">while</span> <span class="kw">not</span> word.startswith(prefix):
+            prefix = prefix[:-<span class="nu">1</span>]
+            <span class="kw">if not</span> prefix: <span class="kw">return</span> <span class="st">""</span>
+    <span class="kw">return</span> prefix
+
+words = [<span class="st">"flower"</span>, <span class="st">"flow"</span>, <span class="st">"flight"</span>]
+<span class="bi">print</span>(longest_common_prefix(words))  <span class="cm"># "fl"</span>` },
+          { q: 'Find the maximum subarray sum using Kadane\'s Algorithm.', io: 'nums=[-2,1,-3,4,-1,2,1,-5,4]\nOutput: 6 (subarray [4,-1,2,1])', solution: `<span class="kw">def</span> <span class="fn">max_subarray</span>(nums):
+    max_sum = current_sum = nums[<span class="nu">0</span>]
+    start = end = temp_start = <span class="nu">0</span>
+    
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">1</span>, <span class="bi">len</span>(nums)):
+        <span class="kw">if</span> nums[i] > current_sum + nums[i]:
+            current_sum = nums[i]
+            temp_start = i
+        <span class="kw">else</span>:
+            current_sum += nums[i]
+        
+        <span class="kw">if</span> current_sum > max_sum:
+            max_sum = current_sum
+            start, end = temp_start, i
+    
+    <span class="bi">print</span>(<span class="st">f"Max sum: {max_sum}"</span>)
+    <span class="bi">print</span>(<span class="st">f"Subarray: {nums[start:end+<span class="nu">1</span>]}"</span>)
+    <span class="kw">return</span> max_sum
+
+max_subarray([-<span class="nu">2</span>, <span class="nu">1</span>, -<span class="nu">3</span>, <span class="nu">4</span>, -<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">1</span>, -<span class="nu">5</span>, <span class="nu">4</span>])` },
+          { q: 'Count the number of ways to climb n stairs, taking 1 or 2 steps at a time (Dynamic Programming).', io: 'Input: 5\nOutput: 8 ways', solution: `<span class="kw">def</span> <span class="fn">climb_stairs</span>(n):
+    <span class="kw">if</span> n <= <span class="nu">2</span>: <span class="kw">return</span> n
+    
+    <span class="cm"># DP: dp[i] = ways to reach step i</span>
+    dp = [<span class="nu">0</span>] * (n + <span class="nu">1</span>)
+    dp[<span class="nu">1</span>] = <span class="nu">1</span>
+    dp[<span class="nu">2</span>] = <span class="nu">2</span>
+    
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="nu">3</span>, n + <span class="nu">1</span>):
+        dp[i] = dp[i-<span class="nu">1</span>] + dp[i-<span class="nu">2</span>]
+    
+    <span class="kw">return</span> dp[n]
+
+n = <span class="bi">int</span>(<span class="bi">input</span>(<span class="st">"Enter stairs: "</span>))
+<span class="bi">print</span>(<span class="st">f"Ways to climb {n} stairs: {climb_stairs(n)}"</span>)` },
+          { q: 'Check if brackets/parentheses are balanced in a string using a stack.', io: 'Input: "({[]})" → True\nInput: "({[})" → False', solution: `<span class="kw">def</span> <span class="fn">is_balanced</span>(s):
+    stack = []
+    pairs = {<span class="st">")"</span>: <span class="st">"("</span>, <span class="st">"]"</span>: <span class="st">"["</span>, <span class="st">"}"</span>: <span class="st">"{"</span>}
+    
+    <span class="kw">for</span> ch <span class="kw">in</span> s:
+        <span class="kw">if</span> ch <span class="kw">in</span> <span class="st">"({["</span>:
+            stack.append(ch)
+        <span class="kw">elif</span> ch <span class="kw">in</span> <span class="st">")]}"</span>:
+            <span class="kw">if not</span> stack <span class="kw">or</span> stack[-<span class="nu">1</span>] != pairs[ch]:
+                <span class="kw">return</span> <span class="kw">False</span>
+            stack.pop()
+    
+    <span class="kw">return</span> <span class="bi">len</span>(stack) == <span class="nu">0</span>
+
+tests = [<span class="st">"({[]})"</span>, <span class="st">"({[})"</span>, <span class="st">"((()))"</span>, <span class="st">"(("</span>]
+<span class="kw">for</span> t <span class="kw">in</span> tests:
+    <span class="bi">print</span>(<span class="st">f"'{t}': {is_balanced(t)}"</span>)` },
+        ]
+      },
+    ]
+  },
+];
+
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+const STORAGE_KEYS = {
+  completed: 'pysprint_completed',
+  notes: 'pysprint_notes',
+  bookmarks: 'pysprint_bookmarks',
+  theme: 'pysprint_theme'
+};
+
+function loadStore(key) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+let completed = loadStore(STORAGE_KEYS.completed);
+let notes = loadStore(STORAGE_KEYS.notes);
+let bookmarks = loadStore(STORAGE_KEYS.bookmarks);
+let currentFilter = 'all';
+let currentSearch = '';
+let allQuestions = [];
+
+function getQid(secId, tIdx, qIdx) { return `${secId}-${tIdx}-${qIdx}`; }
+
+function stripHtml(html) {
+  const div = document.createElement('div');
+  div.innerHTML = html || '';
+  return div.textContent || div.innerText || '';
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text || '';
+  return div.innerHTML;
+}
+
+function saveStore(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function getDifficulty(sec, qIdx) {
+  if (sec.level === 'beginner') return qIdx > 5 ? 'intermediate' : 'beginner';
+  if (sec.level === 'advanced') return qIdx < 2 ? 'intermediate' : 'advanced';
+  return sec.level || 'intermediate';
+}
+
+function getHint(question, topic, sec) {
+  if (question.hint) return question.hint;
+  const topicName = topic?.title || sec?.title || 'this topic';
+  return `Break the problem into inputs, transformation, and output. Use ${topicName.toLowerCase()} concepts first, then compare your result with the solution.`;
+}
+
+function getSearchText(question, topic, sec, qid) {
+  return [
+    question.q,
+    question.io,
+    question.patternOutput,
+    stripHtml(question.solution),
+    topic?.title,
+    sec?.title,
+    notes[qid]
+  ].join(' ').toLowerCase();
+}
+
+// ═══════════════════════════════════════════════════════
+//  BUILD DOM
+// ═══════════════════════════════════════════════════════
+function buildAll() {
+  allQuestions = [];
+  let totalQ = 0;
+  const container = document.getElementById('sectionsContainer');
+  container.innerHTML = '';
+  const sidebar = document.getElementById('sidebar');
+  let sidebarHTML = '';
+
+  sidebarHTML += `<div class="sidebar-label">Navigation</div>`;
+
+  DATA.forEach((sec, sIdx) => {
+    sidebarHTML += `<button class="sidebar-link" onclick="scrollToSection('${sec.id}')" id="sl-${sec.id}">
+      <span class="dot"></span>${sec.title}
+      <span class="count">${sec.topics.reduce((a,t)=>a+t.questions.length,0)}</span>
+    </button>`;
+
+    let topicsHTML = '';
+    sec.topics.forEach((topic, tIdx) => {
+      let questionsHTML = '';
+      topic.questions.forEach((q, qIdx) => {
+        const qid = getQid(sec.id, tIdx, qIdx);
+        const isCompleted = completed[qid];
+        const isBookmarked = bookmarks[qid];
+        const difficulty = getDifficulty(sec, qIdx);
+        const hint = getHint(q, topic, sec);
+        allQuestions.push({ qid, sec, tIdx, qIdx, q, topic, secId: sec.id, difficulty, searchText: getSearchText(q, topic, sec, qid) });
+        totalQ++;
+
+        const ioHtml = q.io ? `<div class="io-example"><div class="io-label">Example</div><span class="io-in">▶ ${q.io.split('\n')[0].replace('Input: ','')}</span><br><span class="io-out">◀ ${q.io.split('\n')[1]?.replace('Output: ','') || ''}</span></div>` : '';
+        const patternHtml = q.patternOutput ? `<div class="pattern-output">${q.patternOutput}</div>` : '';
+        const noteValue = escapeHtml(notes[qid] || '');
+
+        questionsHTML += `
+          <div class="q-card ${isCompleted?'completed':''} ${isBookmarked?'bookmarked':''}" id="qcard-${qid}" data-qid="${qid}" data-level="${sec.level}" data-difficulty="${difficulty}">
+            <div class="q-header">
+              <span class="q-num">Q${qIdx+1}</span>
+              <div class="q-text">
+                ${q.q || ''}
+                <div class="q-meta-row">
+                  <span class="q-chip ${difficulty}">${difficulty}</span>
+                  <span class="q-chip">${topic.title}</span>
+                </div>
+              </div>
+            </div>
+            ${ioHtml}${patternHtml}
+            <div class="q-actions">
+              <button class="btn-hint" onclick="toggleHint('${qid}')" id="hbtn-${qid}">Hint</button>
+              <button class="btn-solution" onclick="toggleSolution('${qid}')" id="sbtn-${qid}">▶ Show Solution</button>
+              <button class="btn-bookmark ${isBookmarked?'saved':''}" onclick="toggleBookmark('${qid}')" id="bbtn-${qid}">${isBookmarked?'Saved':'Save'}</button>
+              <label class="check-completed">
+                <input type="checkbox" ${isCompleted?'checked':''} onchange="markComplete('${qid}', this.checked)">
+                Done
+              </label>
+            </div>
+            <div class="hint-block" id="hint-${qid}">${hint}</div>
+            <div class="solution-block" id="sol-${qid}">
+              <div class="sol-header">
+                <span class="sol-title">python solution.py</span>
+                <button class="copy-btn" onclick="copyCode('${qid}')">Copy</button>
+              </div>
+              <pre class="code-block" id="code-${qid}">${q.solution || ''}</pre>
+            </div>
+            <div class="notes-wrap">
+              <label class="notes-label" for="note-${qid}">Practice notes</label>
+              <textarea class="notes-input" id="note-${qid}" placeholder="Write your attempt, mistake, or shortcut here..." oninput="saveNote('${qid}', this.value)">${noteValue}</textarea>
+            </div>
+          </div>`;
+      });
+
+      topicsHTML += `
+        <div class="topic">
+          <div class="topic-header" onclick="toggleTopic(this)">
+            <span class="topic-title">📌 ${topic.title}</span>
+            <span class="topic-chevron">▼</span>
+          </div>
+          <div class="topic-body">
+            ${questionsHTML}
+          </div>
+        </div>`;
+    });
+
+    const totalInSection = sec.topics.reduce((a,t)=>a+t.questions.length,0);
+
+    container.innerHTML += `
+      <div class="section" id="sec-${sec.id}" data-level="${sec.level}">
+        <div class="section-header open" onclick="toggleSection(this)">
+          <span class="section-badge badge-${sec.badge}">${sec.badge}</span>
+          <span class="section-title">${sec.title}</span>
+          <span class="section-meta">${totalInSection} questions</span>
+          <span class="section-chevron">▼</span>
+        </div>
+        <div class="section-body open">
+          ${topicsHTML}
+        </div>
+      </div>`;
+  });
+
+  sidebar.innerHTML = sidebarHTML;
+  document.getElementById('totalQ').textContent = totalQ;
+  document.getElementById('totalSec').textContent = DATA.length;
+  updateProgress();
+}
+
+// ═══════════════════════════════════════════════════════
+//  TOGGLE FUNCTIONS
+// ═══════════════════════════════════════════════════════
+function toggleSection(header) {
+  header.classList.toggle('open');
+  header.nextElementSibling.classList.toggle('open');
+}
+
+function toggleTopic(header) {
+  header.classList.toggle('open');
+  header.nextElementSibling.classList.toggle('open');
+}
+
+function toggleSolution(qid) {
+  const sol = document.getElementById('sol-' + qid);
+  const btn = document.getElementById('sbtn-' + qid);
+  const isOpen = sol.classList.toggle('open');
+  btn.textContent = isOpen ? '▼ Hide Solution' : '▶ Show Solution';
+  btn.classList.toggle('shown', isOpen);
+}
+
+function toggleHint(qid) {
+  const hint = document.getElementById('hint-' + qid);
+  const btn = document.getElementById('hbtn-' + qid);
+  const isOpen = hint.classList.toggle('open');
+  btn.textContent = isOpen ? 'Hide hint' : 'Hint';
+  btn.classList.toggle('shown', isOpen);
+}
+
+function toggleBookmark(qid) {
+  const shouldSave = !bookmarks[qid];
+  if (shouldSave) bookmarks[qid] = true;
+  else delete bookmarks[qid];
+  saveStore(STORAGE_KEYS.bookmarks, bookmarks);
+
+  const card = document.getElementById('qcard-' + qid);
+  const btn = document.getElementById('bbtn-' + qid);
+  if (card) card.classList.toggle('bookmarked', shouldSave);
+  if (btn) {
+    btn.classList.toggle('saved', shouldSave);
+    btn.textContent = shouldSave ? 'Saved' : 'Save';
+  }
+  updateProgress();
+  applyVisibility();
+}
+
+function saveNote(qid, value) {
+  if (value.trim()) notes[qid] = value;
+  else delete notes[qid];
+  saveStore(STORAGE_KEYS.notes, notes);
+
+  const item = allQuestions.find(entry => entry.qid === qid);
+  if (item) item.searchText = getSearchText(item.q, item.topic, item.sec, qid);
+}
+
+// ═══════════════════════════════════════════════════════
+//  PROGRESS
+// ═══════════════════════════════════════════════════════
+function markComplete(qid, checked) {
+  if (checked) completed[qid] = true;
+  else delete completed[qid];
+  saveStore(STORAGE_KEYS.completed, completed);
+  const card = document.getElementById('qcard-' + qid);
+  if (card) card.classList.toggle('completed', checked);
+  updateProgress();
+}
+
+function updateProgress() {
+  const solved = Object.keys(completed).length;
+  const total = allQuestions.length;
+  const saved = Object.keys(bookmarks).length;
+  const pct = total ? Math.round(solved/total*100) : 0;
+  document.getElementById('solvedCount').textContent = solved;
+  document.getElementById('pctDone').textContent = pct + '%';
+  document.getElementById('bookmarkCount').textContent = saved;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('statusLine').textContent = `${solved}/${total} solved, ${saved} saved, ${Object.keys(notes).length} notes`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  FILTER
+// ═══════════════════════════════════════════════════════
+function filterBy(level, btn) {
+  currentFilter = level;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyVisibility();
+}
+
+// ═══════════════════════════════════════════════════════
+//  SEARCH
+// ═══════════════════════════════════════════════════════
+function handleSearch(query) {
+  currentSearch = query.toLowerCase().trim();
+  applyVisibility();
+}
+
+function isFilterMatch(item) {
+  if (currentFilter === 'all') return true;
+  if (currentFilter === 'saved') return !!bookmarks[item.qid];
+  return item.sec.level === currentFilter;
+}
+
+function applyVisibility() {
+  let visibleCount = 0;
+  const openMatches = !!currentSearch;
+
+  allQuestions.forEach((item) => {
+    const { qid } = item;
+    const card = document.getElementById('qcard-' + qid);
+    if (!card) return;
+    const searchMatch = !currentSearch || item.searchText.includes(currentSearch);
+    const filterMatch = isFilterMatch(item);
+    if (searchMatch && filterMatch) {
+      card.style.display = '';
+      visibleCount++;
+    } else {
+      card.style.display = 'none';
+    }
+  });
+
+  document.querySelectorAll('.section').forEach(sec => {
+    const visibleCards = [...sec.querySelectorAll('.q-card')].filter(c => c.style.display !== 'none');
+    sec.style.display = visibleCards.length ? '' : 'none';
+    if (openMatches) {
+      const body = sec.querySelector('.section-body');
+      const header = sec.querySelector('.section-header');
+      body.classList.add('open');
+      header.classList.add('open');
+      sec.querySelectorAll('.topic-body').forEach(tb => tb.classList.add('open'));
+      sec.querySelectorAll('.topic-header').forEach(th => th.classList.add('open'));
+    }
+
+    sec.querySelectorAll('.topic').forEach(topic => {
+      const topicVisible = [...topic.querySelectorAll('.q-card')].some(c => c.style.display !== 'none');
+      topic.style.display = topicVisible ? '' : 'none';
+    });
+  });
+
+  document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════
+//  RANDOM QUESTION
+// ═══════════════════════════════════════════════════════
+function showRandom() {
+  const idx = Math.floor(Math.random() * allQuestions.length);
+  const { q, sec, qIdx } = allQuestions[idx];
+
+  document.getElementById('randomQuestion').innerHTML =
+    `<strong>Q${qIdx+1}:</strong> ${q.q || ''}` +
+    (q.io ? `<div class="io-example" style="margin-top:10px"><div class="io-label">Example</div><span class="io-in">${q.io.split('\n')[0]}</span><br><span class="io-out">${q.io.split('\n')[1]||''}</span></div>` : '') +
+    (q.patternOutput ? `<div class="pattern-output" style="margin-top:10px">${q.patternOutput}</div>` : '');
+
+  const tag = document.getElementById('randomTag');
+  tag.textContent = sec.title;
+  tag.className = `modal-tag badge-${sec.badge}`;
+
+  const sol = document.getElementById('randomSolution');
+  sol.innerHTML = `<div class="sol-header"><span class="sol-title">python solution.py</span></div><pre class="code-block">${q.solution||''}</pre>`;
+  sol.classList.remove('open');
+  document.getElementById('randomSolBtn').textContent = '▶ Show Solution';
+
+  document.getElementById('randomModal').classList.add('open');
+}
+
+function toggleRandomSol() {
+  const sol = document.getElementById('randomSolution');
+  const btn = document.getElementById('randomSolBtn');
+  const isOpen = sol.classList.toggle('open');
+  btn.textContent = isOpen ? '▼ Hide Solution' : '▶ Show Solution';
+}
+
+function closeModal() { document.getElementById('randomModal').classList.remove('open'); }
+
+// ═══════════════════════════════════════════════════════
+//  COPY CODE
+// ═══════════════════════════════════════════════════════
+function copyCode(qid) {
+  const pre = document.getElementById('code-' + qid);
+  const text = pre.innerText;
+  navigator.clipboard.writeText(text).then(() => showToast('Code copied!')).catch(() => showToast('Copy blocked by browser'));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function resetProgress() {
+  const ok = confirm('Reset solved questions, bookmarks, and notes?');
+  if (!ok) return;
+  completed = {};
+  notes = {};
+  bookmarks = {};
+  saveStore(STORAGE_KEYS.completed, completed);
+  saveStore(STORAGE_KEYS.notes, notes);
+  saveStore(STORAGE_KEYS.bookmarks, bookmarks);
+  buildAll();
+  applyVisibility();
+  showToast('Progress reset');
+}
+
+function exportProgress() {
+  const payload = {
+    app: 'PySprint Studio',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    completed,
+    notes,
+    bookmarks
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'pysprint-progress.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Progress exported');
+}
+
+function importProgress(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      completed = data.completed || {};
+      notes = data.notes || {};
+      bookmarks = data.bookmarks || {};
+      saveStore(STORAGE_KEYS.completed, completed);
+      saveStore(STORAGE_KEYS.notes, notes);
+      saveStore(STORAGE_KEYS.bookmarks, bookmarks);
+      buildAll();
+      applyVisibility();
+      showToast('Progress imported');
+    } catch {
+      showToast('Import failed');
+    } finally {
+      event.target.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function expandAll() {
+  document.querySelectorAll('.section-header, .section-body, .topic-header, .topic-body').forEach(el => el.classList.add('open'));
+}
+
+function collapseAll() {
+  document.querySelectorAll('.section-header, .section-body, .topic-header, .topic-body').forEach(el => el.classList.remove('open'));
+}
+
+// ═══════════════════════════════════════════════════════
+//  THEME
+// ═══════════════════════════════════════════════════════
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  const btn = document.getElementById('themeBtn');
+  btn.textContent = document.body.classList.contains('light') ? '☀️' : '🌙';
+  localStorage.setItem(STORAGE_KEYS.theme, document.body.classList.contains('light') ? 'light' : 'dark');
+}
+
+// ═══════════════════════════════════════════════════════
+//  SCROLL
+// ═══════════════════════════════════════════════════════
+function scrollToSection(id) {
+  const el = document.getElementById('sec-' + id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  document.getElementById('sl-' + id)?.classList.add('active');
+}
+
+// Highlight active sidebar on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id.replace('sec-', '');
+      document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+      document.getElementById('sl-' + id)?.classList.add('active');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '-80px 0px -60% 0px' });
+
+// Modal backdrop close
+document.getElementById('randomModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Keyboard shortcut
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === '/' && !e.ctrlKey) { e.preventDefault(); document.getElementById('searchBar').focus(); }
+});
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+(function init() {
+  if (localStorage.getItem(STORAGE_KEYS.theme) === 'light') {
+    document.body.classList.add('light');
+    document.getElementById('themeBtn').textContent = '☀️';
+  }
+  buildAll();
+  applyVisibility();
+  // Observe sections
+  setTimeout(() => {
+    document.querySelectorAll('.section').forEach(sec => observer.observe(sec));
+  }, 100);
+})();
+</script>
+</body>
+</html>
