@@ -33,5 +33,6 @@ For GitHub Pages:
 Made by Jeet Prajapati.
 
 - Portfolio: https://portfolio-theta-lake-97.vercel.app
+- LinkedIn: https://www.linkedin.com/in/jeet-prajapati-63a4b2273/
 - GitHub: https://github.com/Jeet3107
 - Email: jeetprajapati677@gmail.com
